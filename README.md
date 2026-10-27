@@ -8,14 +8,6 @@
   and hospital management.
 </p>
 
-<p align="center">
-  ![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white)
-  ![Flask](https://img.shields.io/badge/Flask-000000?style=for-the-badge&logo=flask&logoColor=white)
-  ![SQLite](https://img.shields.io/badge/SQLite-003B57?style=for-the-badge&logo=sqlite&logoColor=white)
-</p>
-
----
-
 ## 📌 About the Project
 
 HemoCare is a free, offline Blood Bank Management
