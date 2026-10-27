@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block title %}System Notice - HEMOCARE{% endblock %}
+{% block page_title %}Operational Notice{% endblock %}
+
+{% block content %}
+<div class="card-box" style="max-width: 600px; margin: 40px auto; text-align: center; padding: 40px 20px;">
+  <div style="font-size: 54px; font-weight: 800; color: var(--danger-color); margin-bottom: 12px;">Notice</div>
+  <h2 style="font-size: 20px; margin-bottom: 12px; color: var(--dark-slate);">Unable to Process Request</h2>
+  <p style="color: var(--light-slate); margin-bottom: 24px;">
+    An internal validation or operational exception occurred while processing this transaction. The database transaction has been safely rolled back.
+  </p>
+  <a href="{{ url_for('dashboard') }}" class="btn btn-primary">&larr; Return to Dashboard</a>
+</div>
+{% endblock %}

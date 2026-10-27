@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+
+{% block title %}Issue Blood Unit - HEMOCARE{% endblock %}
+{% block page_title %}Issue Blood / Component Unit{% endblock %}
+
+{% block content %}
+<div class="card-box" style="max-width: 860px; margin: 0 auto;">
+  <div class="card-header">
+    <div class="card-title">Blood Dispatch &amp; Issue Slip Entry</div>
+    <a href="{{ url_for('issues') }}" class="btn btn-sm btn-secondary">&larr; Back to Issue Register</a>
+  </div>
+
+  <div class="card-body">
+    <!-- Dynamic Unit Eligibility Banner -->
+    <div id="unit_eligibility_box" style="display: none; margin-bottom: 20px;"></div>
+
+    <form method="POST" action="{{ url_for('issue_new') }}">
+      <div class="form-grid">
+        <!-- Unit Selection -->
+        <div class="form-group full-width">
+          <label class="form-label" for="select_unit_id">Select Screened Available Unit <span class="required">*</span></label>
+          <select id="select_unit_id" name="unit_id" class="form-control" required>
+            <option value="">-- Choose Eligible Blood Unit --</option>
+            {% for u in units %}
+            <option value="{{ u.id }}" {% if request.args.get('unit_id')|int == u.id %}selected{% endif %}>
+              {{ u.unit_code }} &mdash; {{ u.blood_group }} {{ u.component_type }} (Vol: {{ u.volume_ml }} mL, Exp: {{ u.expiry_date }})
+            </option>
+            {% endfor %}
+          </select>
+          <span class="form-help">Only available units with Non-Reactive serology and unexpired shelf life are listed.</span>
+        </div>
+
+        <!-- Auto-filled Blood Group -->
+        <div class="form-group">
+          <label class="form-label">Blood Group (Auto-fetched)</label>
+          <input type="text" id="unit_bg_display" class="form-control" readonly placeholder="Auto-populated" style="background-color: #f8fafc; font-weight: bold; color: var(--primary-red);">
+        </div>
+
+        <!-- Auto-filled Component Type -->
+        <div class="form-group">
+          <label class="form-label">Component Type (Auto-fetched)</label>
+          <input type="text" id="unit_comp_display" class="form-control" readonly placeholder="Auto-populated" style="background-color: #f8fafc; font-weight: bold;">
+        </div>
+
+        <!-- Auto-filled Expiry Date -->
+        <div class="form-group">
+          <label class="form-label">Expiry Date (Auto-fetched)</label>
+          <input type="text" id="unit_exp_display" class="form-control" readonly placeholder="Auto-populated" style="background-color: #f8fafc;">
+        </div>
+
+        <!-- Auto-filled Serology -->
+        <div class="form-group">
+          <label class="form-label">Serology Status (Auto-fetched)</label>
+          <input type="text" id="unit_ser_display" class="form-control" readonly placeholder="Auto-populated" style="background-color: #f8fafc;">
+        </div>
+
+        <!-- Issue Date -->
+        <div class="form-group">
+          <label class="form-label" for="issue_date">Issue Date <span class="required">*</span></label>
+          <input type="date" id="issue_date" name="issue_date" class="form-control" value="{{ today }}" required>
+        </div>
+
+        <!-- Hospital Selection -->
+        <div class="form-group">
+          <label class="form-label" for="hospital_id">Receiving Hospital / Center <span class="required">*</span></label>
+          <select id="hospital_id" name="hospital_id" class="form-control" required>
+            <option value="">-- Select Receiving Hospital --</option>
+            {% for h in hospitals %}
+            <option value="{{ h.id }}">{{ h.hospital_code }} &mdash; {{ h.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <!-- Patient Name -->
+        <div class="form-group">
+          <label class="form-label" for="patient_name">Recipient Patient Name <span class="required">*</span></label>
+          <input type="text" id="patient_name" name="patient_name" class="form-control" placeholder="e.g. Jane Doe" required>
+        </div>
+
+        <!-- Patient ID / IPD No. -->
+        <div class="form-group">
+          <label class="form-label" for="patient_id">Hospital Patient / IPD / MRN ID</label>
+          <input type="text" id="patient_id" name="patient_id" class="form-control" placeholder="e.g. IPD-8942">
+        </div>
+
+        <!-- Doctor / Department -->
+        <div class="form-group">
+          <label class="form-label" for="doctor_dept">Requesting Doctor / Department</label>
+          <input type="text" id="doctor_dept" name="doctor_dept" class="form-control" placeholder="e.g. Dr. Roberts / ICU - Surgery">
+        </div>
+
+        <!-- Issued By -->
+        <div class="form-group">
+          <label class="form-label" for="issued_by">Issued By (Blood Bank Officer) <span class="required">*</span></label>
+          <input type="text" id="issued_by" name="issued_by" class="form-control" value="{{ current_full_name or 'Blood Bank Officer' }}" required>
+        </div>
+
+        <!-- Clinical Reason -->
+        <div class="form-group full-width">
+          <label class="form-label" for="reason">Indication / Clinical Transfusion Reason</label>
+          <input type="text" id="reason" name="reason" class="form-control" placeholder="e.g. Acute hemorrhagic shock, severe anemia, elective cardiac surgery">
+        </div>
+
+        <!-- Remarks -->
+        <div class="form-group full-width">
+          <label class="form-label" for="remarks">Cross-match / Compatibility Notes</label>
+          <textarea id="remarks" name="remarks" class="form-control" rows="2" placeholder="Major/minor crossmatch compatible, bedside check verified"></textarea>
+        </div>
+      </div>
+
+      <div style="margin-top: 24px; display: flex; gap: 12px; justify-content: flex-end;">
+        <a href="{{ url_for('issues') }}" class="btn btn-secondary">Cancel</a>
+        <button type="submit" id="btn_submit_issue" class="btn btn-primary">Confirm Issue &amp; Generate Slip</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

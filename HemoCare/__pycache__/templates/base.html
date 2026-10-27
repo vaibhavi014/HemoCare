@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}HEMOCARE{% endblock %} - Offline Blood Bank Management System</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+  <div class="app-wrapper">
+    <!-- Sidebar Navigation -->
+    <aside class="app-sidebar">
+      <div class="brand-section">
+        <div class="brand-logo-row">
+          <span class="blood-drop-icon"></span>
+          <div>
+            <div class="brand-title">HEMOCARE</div>
+            <div class="brand-subtitle">Offline Blood Bank System</div>
+          </div>
+        </div>
+        <div class="brand-tagline">Safe Blood — Healthier Tomorrow</div>
+      </div>
+
+      <nav class="sidebar-nav">
+        <div class="nav-group-title">Main</div>
+        <a href="{{ url_for('dashboard') }}" class="sidebar-link {% if request.endpoint == 'dashboard' %}active{% endif %}">
+          <svg viewBox="0 0 24 24"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>
+          <span>Dashboard</span>
+        </a>
+
+        <div class="nav-group-title">Donor & Donation</div>
+        <a href="{{ url_for('donors') }}" class="sidebar-link {% if request.endpoint and 'donor' in request.endpoint %}active{% endif %}">
+          <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+          <span>Donor Master</span>
+        </a>
+        <a href="{{ url_for('donations') }}" class="sidebar-link {% if request.endpoint and 'donation' in request.endpoint %}active{% endif %}">
+          <svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+          <span>Donation Register</span>
+        </a>
+        <a href="{{ url_for('serology') }}" class="sidebar-link {% if  request.endpoint and 'serology' in request.endpoint %}active{% endif %}">
+          <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 10h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/></svg>
+          <span>Serology Register</span>
+        </a>
+
+        <div class="nav-group-title">Inventory & Stock</div>
+        <a href="{{ url_for('inventory') }}" class="sidebar-link {% if 'inventory' in request.endpoint %}active{% endif %}">
+          <svg viewBox="0 0 24 24"><path d="M20 13H4c-.55 0-1 .45-1 1v6c0 .55.45 1 1 1h16c.55 0 1-.45 1-1v-6c0-.55-.45-1-1-1zM4 3h16c.55 0 1 .45 1 1v6c0 .55-.45 1-1 1H4c-.55 0-1-.45-1-1V4c0-.55.45-1 1-1z"/></svg>
+          <span>Component Inventory</span>
+        </a>
+        <a href="{{ url_for('stock') }}" class="sidebar-link {% if request.endpoint in ['stock', 'stock_settings'] %}active{% endif %}">
+          <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 3c1.93 0 3.5 1.57 3.5 3.5S13.93 13 12 13s-3.5-1.57-3.5-3.5S10.07 6 12 6zm7 13H5v-.23c0-.62.28-1.2.76-1.58C7.47 15.82 9.64 15 12 15s4.53.82 6.24 2.19c.48.38.76.97.76 1.58V19z"/></svg>
+          <span>Stock Matrix</span>
+        </a>
+
+        <div class="nav-group-title">Distribution & Discard</div>
+        <a href="{{ url_for('issues') }}" class="sidebar-link {% if 'issue' in request.endpoint %}active{% endif %}">
+          <svg viewBox="0 0 24 24"><path d="M19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm2 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+          <span>Issue Register</span>
+        </a>
+        <a href="{{ url_for('discards') }}" class="sidebar-link {% if 'discard' in request.endpoint %}active{% endif %}">
+          <svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+          <span>Discard / Wastage</span>
+        </a>
+        <a href="{{ url_for('hospitals') }}" class="sidebar-link {% if 'hospital' in request.endpoint %}active{% endif %}">
+          <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-1.99.9-1.99 2L3 19c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-1 11h-4v4h-4v-4H6v-4h4V6h4v4h4v4z"/></svg>
+          <span>Hospital Master</span>
+        </a>
+
+        <div class="nav-group-title">Analytics & Help</div>
+        <a href="{{ url_for('reports') }}" class="sidebar-link {% if request.endpoint in ['reports', 'export_excel', 'export_pdf'] %}active{% endif %}">
+          <svg viewBox="0 0 24 24"><path d="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z"/></svg>
+          <span>Reports & Export</span>
+        </a>
+        <a href="{{ url_for('instructions') }}" class="sidebar-link {% if request.endpoint == 'instructions' %}active{% endif %}">
+          <svg viewBox="0 0 24 24"><path d="M11 18h2v-2h-2v2zm1-16C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm0-14c-2.21 0-4 1.79-4 4h2c0-1.1.9-2 2-2s2 .9 2 2c0 2-3 1.75-3 5h2c0-2.25 3-2.5 3-5 0-2.21-1.79-4-4-4z"/></svg>
+          <span>Instructions</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div class="user-profile-badge">
+          <div class="user-profile-info">
+            <span class="user-name">{{ current_full_name or 'Administrator' }}</span>
+            <span class="user-role">@{{ current_user or 'admin' }}</span>
+          </div>
+          <a href="{{ url_for('logout') }}" class="btn-logout" title="Sign Out">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/></svg>
+          </a>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <div class="app-main">
+      <header class="app-topbar">
+        <div class="topbar-title-area">
+          <h1 class="topbar-title">{% block page_title %}Dashboard{% endblock %}</h1>
+          <span class="topbar-badge-offline" title="Zero internet dependency. Running 100% locally.">
+            <span class="pulse-dot"></span> 100% Offline Mode
+          </span>
+        </div>
+        <div class="topbar-actions">
+          {% if low_stock_count > 0 %}
+          <a href="{{ url_for('stock') }}" class="badge badge-danger" title="Low stock alert">
+            Low Stock: {{ low_stock_count }} items
+          </a>
+          {% endif %}
+          {% if expiring_soon_count > 0 %}
+          <a href="{{ url_for('inventory', expiring_days=7) }}" class="badge badge-warning" title="Units expiring within 7 days">
+            Expiring Soon: {{ expiring_soon_count }} units
+          </a>
+          {% endif %}
+          <a href="{{ url_for('donation_add') }}" class="btn btn-primary btn-sm">+ New Donation</a>
+          <a href="{{ url_for('issue_new') }}" class="btn btn-secondary btn-sm">Issue Blood</a>
+        </div>
+      </header>
+
+      <main class="content-container">
+        <!-- Flash messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+          <div class="flash-container">
+            {% for category, message in messages %}
+            <div class="alert alert-{{ category }}">
+              <span>{{ message }}</span>
+              <button type="button" class="alert-close" aria-label="Close">&times;</button>
+            </div>
+            {% endfor %}
+          </div>
+          {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+      </main>
+    </div>
+  </div>
+
+  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+  {% block extra_scripts %}{% endblock %}
+</body>
+</html>

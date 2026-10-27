@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+
+{% block title %}Record Serology - HEMOCARE{% endblock %}
+{% block page_title %}Record Serology Screening (TTI){% endblock %}
+
+{% block content %}
+<div class="card-box" style="max-width: 860px; margin: 0 auto;">
+  <div class="card-header">
+    <div class="card-title">Infection Screening Test Entry</div>
+    <a href="{{ url_for('serology') }}" class="btn btn-sm btn-secondary">&larr; Back to Serology Register</a>
+  </div>
+
+  <div class="card-body">
+    <form method="POST" action="{{ url_for('serology_record') }}">
+      <div class="form-grid">
+        <!-- Donation Selection -->
+        <div class="form-group full-width">
+          <label class="form-label" for="donation_id">Select Blood Donation <span class="required">*</span></label>
+          <select id="donation_id" name="donation_id" class="form-control" required>
+            <option value="">-- Select Blood Donation --</option>
+            {% for d in all_donations %}
+            <option value="{{ d.id }}" {% if donation and donation.id == d.id %}selected{% endif %}>
+              {{ d.donation_code }} - Donor: {{ d.donor_name }} ({{ d.blood_group }}) | Date: {{ d.donation_date }} | Current Serology: {{ d.overall_result or 'Unscreened' }}
+            </option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <!-- Test Date -->
+        <div class="form-group">
+          <label class="form-label" for="test_date">Test / Screening Date <span class="required">*</span></label>
+          <input type="date" id="test_date" name="test_date" class="form-control" value="{{ serology.test_date if serology else today }}" required>
+        </div>
+
+        <!-- HIV -->
+        <div class="form-group">
+          <label class="form-label" for="hiv_select">HIV 1 &amp; 2 Antibody / Antigen <span class="required">*</span></label>
+          <select id="hiv_select" name="hiv" class="form-control" required>
+            <option value="Non-Reactive" {% if not serology or serology.hiv == 'Non-Reactive' %}selected{% endif %}>Non-Reactive (Negative)</option>
+            <option value="Reactive" {% if serology and serology.hiv == 'Reactive' %}selected{% endif %}>Reactive (Positive)</option>
+            <option value="Pending" {% if serology and serology.hiv == 'Pending' %}selected{% endif %}>Pending</option>
+          </select>
+        </div>
+
+        <!-- HBsAg -->
+        <div class="form-group">
+          <label class="form-label" for="hbsag_select">Hepatitis B (HBsAg) <span class="required">*</span></label>
+          <select id="hbsag_select" name="hbsag" class="form-control" required>
+            <option value="Non-Reactive" {% if not serology or serology.hbsag == 'Non-Reactive' %}selected{% endif %}>Non-Reactive (Negative)</option>
+            <option value="Reactive" {% if serology and serology.hbsag == 'Reactive' %}selected{% endif %}>Reactive (Positive)</option>
+            <option value="Pending" {% if serology and serology.hbsag == 'Pending' %}selected{% endif %}>Pending</option>
+          </select>
+        </div>
+
+        <!-- HCV -->
+        <div class="form-group">
+          <label class="form-label" for="hcv_select">Hepatitis C (HCV) <span class="required">*</span></label>
+          <select id="hcv_select" name="hcv" class="form-control" required>
+            <option value="Non-Reactive" {% if not serology or serology.hcv == 'Non-Reactive' %}selected{% endif %}>Non-Reactive (Negative)</option>
+            <option value="Reactive" {% if serology and serology.hcv == 'Reactive' %}selected{% endif %}>Reactive (Positive)</option>
+            <option value="Pending" {% if serology and serology.hcv == 'Pending' %}selected{% endif %}>Pending</option>
+          </select>
+        </div>
+
+        <!-- Syphilis (VDRL / RPR) -->
+        <div class="form-group">
+          <label class="form-label" for="syphilis_select">Syphilis (VDRL / TPHA) <span class="required">*</span></label>
+          <select id="syphilis_select" name="syphilis" class="form-control" required>
+            <option value="Non-Reactive" {% if not serology or serology.syphilis == 'Non-Reactive' %}selected{% endif %}>Non-Reactive (Negative)</option>
+            <option value="Reactive" {% if serology and serology.syphilis == 'Reactive' %}selected{% endif %}>Reactive (Positive)</option>
+            <option value="Pending" {% if serology and serology.syphilis == 'Pending' %}selected{% endif %}>Pending</option>
+          </select>
+        </div>
+
+        <!-- Malaria -->
+        <div class="form-group">
+          <label class="form-label" for="malaria_select">Malaria (Rapid / Smear) <span class="required">*</span></label>
+          <select id="malaria_select" name="malaria" class="form-control" required>
+            <option value="Non-Reactive" {% if not serology or serology.malaria == 'Non-Reactive' %}selected{% endif %}>Non-Reactive (Negative)</option>
+            <option value="Reactive" {% if serology and serology.malaria == 'Reactive' %}selected{% endif %}>Reactive (Positive)</option>
+            <option value="Pending" {% if serology and serology.malaria == 'Pending' %}selected{% endif %}>Pending</option>
+          </select>
+        </div>
+
+        <!-- Auto-Calculated Overall Result -->
+        <div class="form-group full-width" style="background-color: #f8fafc; padding: 16px; border: 1px solid var(--border-color); border-radius: var(--radius-sm);">
+          <div style="display: flex; align-items: center; justify-content: space-between;">
+            <div>
+              <label class="form-label" style="font-size: 14px;"><strong>Calculated Overall Serology Screening Status:</strong></label>
+              <p class="form-help" style="margin-top: 2px;">
+                Rule: If ANY test is Reactive &rarr; Overall Reactive (Unit is automatically quarantined and blocked from issuance).<br>
+                If ALL tests are Non-Reactive &rarr; Safe for therapeutic use.
+              </p>
+            </div>
+            <div>
+              <input type="hidden" id="overall_result_select" name="overall_result" value="{{ serology.overall_result if serology else 'Non-Reactive' }}">
+              <span id="overall_result_badge" class="badge badge-{{ serology.overall_result.lower() if serology else 'non-reactive' }}" style="font-size: 14px; padding: 6px 14px;">
+                {{ serology.overall_result.upper() if serology else 'NON-REACTIVE' }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Remarks -->
+        <div class="form-group full-width">
+          <label class="form-label" for="remarks">Laboratory Technician Remarks / Kit Lot No.</label>
+          <textarea id="remarks" name="remarks" class="form-control" rows="2" placeholder="ELISA / CLIA test kit batch numbers, technologist initials">{{ serology.remarks if serology else '' }}</textarea>
+        </div>
+      </div>
+
+      <div style="margin-top: 24px; display: flex; gap: 12px; justify-content: flex-end;">
+        <a href="{{ url_for('serology') }}" class="btn btn-secondary">Cancel</a>
+        <button type="submit" class="btn btn-primary">Save Screening Result</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

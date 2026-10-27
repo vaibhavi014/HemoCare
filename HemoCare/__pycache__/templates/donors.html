@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+
+{% block title %}Donor Master{% endblock %}
+{% block page_title %}Donor Master Directory{% endblock %}
+
+{% block content %}
+<!-- Filter & Search Bar -->
+<form method="GET" action="{{ url_for('donors') }}" class="filter-bar">
+  <div style="flex: 2; min-width: 220px;">
+    <input type="text" name="search" class="form-control" placeholder="Search by Donor ID, Name, Phone, Email..." value="{{ search }}">
+  </div>
+
+  <div style="flex: 1; min-width: 140px;">
+    <select name="blood_group" class="form-control">
+      <option value="">-- All Blood Groups --</option>
+      {% for bg in valid_blood_groups %}
+      <option value="{{ bg }}" {% if blood_group == bg %}selected{% endif %}>{{ bg }}</option>
+      {% endfor %}
+    </select>
+  </div>
+
+  <div style="flex: 1; min-width: 130px;">
+    <select name="status" class="form-control">
+      <option value="">-- All Statuses --</option>
+      <option value="Active" {% if status == 'Active' %}selected{% endif %}>Active</option>
+      <option value="Inactive" {% if status == 'Inactive' %}selected{% endif %}>Inactive</option>
+      <option value="Deferred" {% if status == 'Deferred' %}selected{% endif %}>Deferred</option>
+    </select>
+  </div>
+
+  <button type="submit" class="btn btn-secondary">Filter</button>
+  <a href="{{ url_for('donors') }}" class="btn btn-secondary">Reset</a>
+  <a href="{{ url_for('donor_add') }}" class="btn btn-primary" style="margin-left: auto;">+ Register New Donor</a>
+</form>
+
+<!-- Donors List Table -->
+<div class="card-box">
+  <div class="card-header">
+    <div class="card-title">Registered Donors ({{ donors|length }})</div>
+  </div>
+  <div class="table-responsive">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Donor ID</th>
+          <th>Full Name</th>
+          <th>Age / Sex</th>
+          <th>Blood Group</th>
+          <th>Contact Phone</th>
+          <th>Donor Type</th>
+          <th>Last Donation</th>
+          <th>Status</th>
+          <th style="text-align: right;">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for donor in donors %}
+        <tr>
+          <td><a href="{{ url_for('donor_view', donor_id=donor.id) }}" style="font-weight: 700; color: var(--primary-red); text-decoration: none;">{{ donor.donor_code }}</a></td>
+          <td><strong>{{ donor.name }}</strong></td>
+          <td>{{ donor.age }} yrs / {{ donor.gender }}</td>
+          <td><span class="badge badge-blood">{{ donor.blood_group }}</span></td>
+          <td>{{ donor.phone }}</td>
+          <td>{{ donor.donor_type }}</td>
+          <td>{{ donor.last_donation_date or 'Never' }}</td>
+          <td>
+            <span class="badge badge-{{ donor.status.lower() }}">{{ donor.status }}</span>
+          </td>
+          <td style="text-align: right;">
+            <div class="btn-action-group" style="justify-content: flex-end;">
+              <a href="{{ url_for('donor_view', donor_id=donor.id) }}" class="btn btn-sm btn-secondary" title="View Profile">View</a>
+              <a href="{{ url_for('donor_edit', donor_id=donor.id) }}" class="btn btn-sm btn-secondary" title="Edit">Edit</a>
+              <form method="POST" action="{{ url_for('donor_delete', donor_id=donor.id) }}" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete donor {{ donor.donor_code }}?');">
+                <button type="submit" class="btn btn-sm btn-danger" title="Delete">Delete</button>
+              </form>
+            </div>
+          </td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="9">
+            <div class="empty-state">
+              <div class="empty-state-title">No Donors Found</div>
+              <p>Try clearing your search filters or register a new donor.</p>
+              <a href="{{ url_for('donor_add') }}" class="btn btn-primary" style="margin-top: 12px;">+ Register Donor</a>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

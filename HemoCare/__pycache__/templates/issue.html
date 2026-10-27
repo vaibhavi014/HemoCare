@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% block title %}Issue Register{% endblock %}
+{% block page_title %}Blood &amp; Component Issue Register{% endblock %}
+
+{% block content %}
+<!-- Search & Filter Bar -->
+<form method="GET" action="{{ url_for('issues') }}" class="filter-bar">
+  <div style="flex: 2; min-width: 200px;">
+    <input type="text" name="search" class="form-control" placeholder="Search by Issue ID, Unit ID, Hospital, Patient..." value="{{ search }}">
+  </div>
+
+  <div style="flex: 1; min-width: 140px;">
+    <select name="component" class="form-control">
+      <option value="">-- All Components --</option>
+      {% for comp in valid_components %}
+      <option value="{{ comp }}" {% if component == comp %}selected{% endif %}>{{ comp }}</option>
+      {% endfor %}
+    </select>
+  </div>
+
+  <div style="flex: 1; min-width: 120px;">
+    <select name="blood_group" class="form-control">
+      <option value="">-- Blood Group --</option>
+      {% for bg in valid_blood_groups %}
+      <option value="{{ bg }}" {% if blood_group == bg %}selected{% endif %}>{{ bg }}</option>
+      {% endfor %}
+    </select>
+  </div>
+
+  <div style="flex: 1; min-width: 130px;">
+    <input type="date" name="date_from" class="form-control" placeholder="From Date" value="{{ date_from }}">
+  </div>
+
+  <div style="flex: 1; min-width: 130px;">
+    <input type="date" name="date_to" class="form-control" placeholder="To Date" value="{{ date_to }}">
+  </div>
+
+  <button type="submit" class="btn btn-secondary">Filter</button>
+  <a href="{{ url_for('issues') }}" class="btn btn-secondary">Reset</a>
+  <a href="{{ url_for('issue_new') }}" class="btn btn-primary" style="margin-left: auto;">+ New Blood Issue</a>
+</form>
+
+<div class="card-box">
+  <div class="card-header">
+    <div class="card-title">Completed Blood Dispatches &amp; Issues ({{ issues|length }})</div>
+  </div>
+  <div class="table-responsive">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Issue Slip ID</th>
+          <th>Issue Date</th>
+          <th>Receiving Hospital</th>
+          <th>Unit ID</th>
+          <th>Component</th>
+          <th>Blood Group</th>
+          <th>Patient Name / ID</th>
+          <th>Department / Doctor</th>
+          <th>Issued By</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for iss in issues %}
+        <tr>
+          <td><strong style="color: var(--primary-red);">{{ iss.issue_code }}</strong></td>
+          <td>{{ iss.issue_date }}</td>
+          <td>
+            <strong>{{ iss.hospital_name }}</strong>
+            <div style="font-size: 11px; color: var(--light-slate);">{{ iss.hospital_code }}</div>
+          </td>
+          <td><code>{{ iss.unit_code }}</code></td>
+          <td>{{ iss.component_type }}</td>
+          <td><span class="badge badge-blood">{{ iss.blood_group }}</span></td>
+          <td>
+            <strong>{{ iss.patient_name }}</strong>
+            {% if iss.patient_id %}<div style="font-size: 11px; color: var(--light-slate);">ID: {{ iss.patient_id }}</div>{% endif %}
+          </td>
+          <td>{{ iss.doctor_dept or 'Unspecified' }}</td>
+          <td>{{ iss.issued_by }}</td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="9">
+            <div class="empty-state">
+              <div class="empty-state-title">No issue records found</div>
+              <p>Issue an eligible screened blood unit to a hospital.</p>
+              <a href="{{ url_for('issue_new') }}" class="btn btn-primary" style="margin-top: 12px;">+ Issue Blood Unit</a>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

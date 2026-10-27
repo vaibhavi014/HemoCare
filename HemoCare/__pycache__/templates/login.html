@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - HEMOCARE Blood Bank Management System</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="login-page-body">
+  <div class="login-card">
+    <div class="login-header">
+      <div class="login-logo"></div>
+      <h1 class="login-title">HEMOCARE</h1>
+      <p class="login-subtitle">Offline Blood Bank Management System</p>
+      <p class="login-tagline">Safe Blood — Healthier Tomorrow</p>
+    </div>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+      <div class="flash-container">
+        {% for category, message in messages %}
+        <div class="alert alert-{{ category }}">
+          <span>{{ message }}</span>
+          <button type="button" class="alert-close">&times;</button>
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+    {% endwith %}
+
+    <form method="POST" action="{{ url_for('login') }}">
+      <div class="form-group" style="margin-bottom: 16px;">
+        <label class="form-label" for="username">Username</label>
+        <input type="text" id="username" name="username" class="form-control" placeholder="Enter username" required autofocus autocomplete="username">
+      </div>
+
+      <div class="form-group" style="margin-bottom: 24px;">
+        <label class="form-label" for="password">Password</label>
+        <input type="password" id="password" name="password" class="form-control" placeholder="Enter password" required autocomplete="current-password">
+      </div>
+
+      <button type="submit" class="btn btn-primary" style="width: 100%; padding: 11px; font-size: 14.5px;">
+        Sign In to HemoCare
+      </button>
+    </form>
+
+    <div class="login-credentials-hint">
+      <strong>Default Demonstration Credentials:</strong><br>
+      Username: <code style="color: var(--primary-red); font-weight: bold;">admin</code> &nbsp;|&nbsp; 
+      Password: <code style="color: var(--primary-red); font-weight: bold;">admin123</code>
+    </div>
+  </div>
+
+  <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>

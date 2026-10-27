@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block title %}Hospital Master{% endblock %}
+{% block page_title %}Hospital &amp; Transfusion Center Master Directory{% endblock %}
+
+{% block content %}
+<!-- Search & Filter Bar -->
+<form method="GET" action="{{ url_for('hospitals') }}" class="filter-bar">
+  <div style="flex: 2; min-width: 220px;">
+    <input type="text" name="search" class="form-control" placeholder="Search by Hospital ID, Name, Contact, Phone..." value="{{ search }}">
+  </div>
+
+  <div style="flex: 1; min-width: 140px;">
+    <select name="status" class="form-control">
+      <option value="">-- All Statuses --</option>
+      <option value="Active" {% if status == 'Active' %}selected{% endif %}>Active</option>
+      <option value="Inactive" {% if status == 'Inactive' %}selected{% endif %}>Inactive</option>
+    </select>
+  </div>
+
+  <button type="submit" class="btn btn-secondary">Filter</button>
+  <a href="{{ url_for('hospitals') }}" class="btn btn-secondary">Reset</a>
+  <a href="{{ url_for('hospital_add') }}" class="btn btn-primary" style="margin-left: auto;">+ Register Hospital</a>
+</form>
+
+<div class="card-box">
+  <div class="card-header">
+    <div class="card-title">Registered Hospitals &amp; Clinics ({{ hospitals|length }})</div>
+  </div>
+  <div class="table-responsive">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Hospital ID</th>
+          <th>Hospital Name</th>
+          <th>Contact Person</th>
+          <th>Phone</th>
+          <th>Email</th>
+          <th>License / Reg No.</th>
+          <th>Status</th>
+          <th style="text-align: right;">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for h in hospitals %}
+        <tr>
+          <td><a href="{{ url_for('hospital_view', hosp_id=h.id) }}" style="font-weight: 700; color: var(--primary-red); text-decoration: none;">{{ h.hospital_code }}</a></td>
+          <td><strong>{{ h.name }}</strong></td>
+          <td>{{ h.contact_person or '-' }}</td>
+          <td>{{ h.phone }}</td>
+          <td>{{ h.email or '-' }}</td>
+          <td><code>{{ h.license_number or '-' }}</code></td>
+          <td><span class="badge badge-{{ h.status.lower() }}">{{ h.status }}</span></td>
+          <td style="text-align: right;">
+            <div class="btn-action-group" style="justify-content: flex-end;">
+              <a href="{{ url_for('hospital_view', hosp_id=h.id) }}" class="btn btn-sm btn-secondary">View</a>
+              <a href="{{ url_for('hospital_edit', hosp_id=h.id) }}" class="btn btn-sm btn-secondary">Edit</a>
+              <form method="POST" action="{{ url_for('hospital_delete', hosp_id=h.id) }}" style="display: inline;" onsubmit="return confirm('Delete hospital {{ h.hospital_code }}?');">
+                <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+              </form>
+            </div>
+          </td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="8">
+            <div class="empty-state">
+              <div class="empty-state-title">No hospitals found</div>
+              <p>Register a hospital or healthcare center to enable blood dispatch.</p>
+              <a href="{{ url_for('hospital_add') }}" class="btn btn-primary" style="margin-top: 12px;">+ Register Hospital</a>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
