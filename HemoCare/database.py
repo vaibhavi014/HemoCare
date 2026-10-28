@@ -3,9 +3,13 @@ import sqlite3
 from datetime import datetime, date, timedelta
 from werkzeug.security import generate_password_hash, check_password_hash
 
-DB_NAME = "bloodbank.db"
+DB_NAME = os.environ.get("HEMOCARE_DB_NAME", "bloodbank.db")
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-DB_PATH = os.path.join(BASE_DIR, DB_NAME)
+
+if os.path.isabs(DB_NAME):
+    DB_PATH = DB_NAME
+else:
+    DB_PATH = os.path.join(BASE_DIR, DB_NAME)
 
 VALID_COMPONENTS = ["Whole Blood", "PRBC", "FFP", "Platelets"]
 VALID_BLOOD_GROUPS = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"]
