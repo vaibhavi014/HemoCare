@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+
+{% block title %}Unit Details - {{ unit.unit_code }}{% endblock %}
+{% block page_title %}Blood Unit Inspection: {{ unit.unit_code }}{% endblock %}
+
+{% block content %}
+<div class="card-box" style="max-width: 860px; margin: 0 auto 24px;">
+  <div class="card-header">
+    <div class="card-title">Blood Unit Master Card</div>
+    <div class="btn-action-group">
+      {% if is_eligible %}
+      <a href="{{ url_for('issue_new') }}?unit_id={{ unit.id }}" class="btn btn-sm btn-primary">Issue Unit</a>
+      {% endif %}
+      {% if unit.status not in ['Issued', 'Discarded'] %}
+      <a href="{{ url_for('discard_new') }}?unit_id={{ unit.id }}" class="btn btn-sm btn-danger">Discard Unit</a>
+      {% endif %}
+      <a href="{{ url_for('inventory') }}" class="btn btn-sm btn-secondary">&larr; Back to Inventory</a>
+    </div>
+  </div>
+
+  <div class="card-body">
+    <!-- Eligibility Banner -->
+    <div class="unit-eligibility-banner {% if is_eligible %}banner-eligible{% else %}banner-ineligible{% endif %}">
+      {% if is_eligible %}
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+      <div>
+        <strong>Eligible for Transfusion Issue:</strong> Unit meets all criteria: Tested Non-Reactive, unexpired, and available.
+      </div>
+      {% else %}
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>
+      <div>
+        <strong>Issue Prohibited:</strong> {{ eligibility_msg }}
+      </div>
+      {% endif %}
+    </div>
+
+    <div class="detail-view-grid">
+      <div class="detail-item">
+        <span class="detail-key">Unit Barcode / ID</span>
+        <span class="detail-val" style="color: var(--primary-red); font-size: 16px;">{{ unit.unit_code }}</span>
+      </div>
+      <div class="detail-item">
+        <span class="detail-key">Component Type</span>
+        <span class="detail-val">{{ unit.component_type }}</span>
+      </div>
+      <div class="detail-item">
+        <span class="detail-key">Blood Group</span>
+        <span class="detail-val"><span class="badge badge-blood">{{ unit.blood_group }}</span></span>
+      </div>
+      <div class="detail-item">
+        <span class="detail-key">Volume</span>
+        <span class="detail-val">{{ unit.volume_ml }} mL</span>
+      </div>
+      <div class="detail-item">
+        <span class="detail-key">Collection Date</span>
+        <span class="detail-val">{{ unit.collection_date }}</span>
+      </div>
+      <div class="detail-item">
+        <span class="detail-key">Expiry Date</span>
+        <span class="detail-val">{{ unit.expiry_date }}</span>
+      </div>
+      <div class="detail-item">
+        <span class="detail-key">Storage Location</span>
+        <span class="detail-val">{{ unit.storage_location }}</span>
+      </div>
+      <div class="detail-item">
+        <span class="detail-key">Serology Screening Status</span>
+        <span class="detail-val"><span class="badge badge-{{ unit.serology_status.lower() }}">{{ unit.serology_status }}</span></span>
+      </div>
+      <div class="detail-item">
+        <span class="detail-key">Inventory Lifecycle Status</span>
+        <span class="detail-val"><span class="badge badge-{{ unit.status.lower() }}">{{ unit.status }}</span></span>
+      </div>
+      <div class="detail-item">
+        <span class="detail-key">Source Donation</span>
+        <span class="detail-val">{{ unit.donation_code or 'Direct Entry' }}</span>
+      </div>
+    </div>
+
+    {% if unit.remarks %}
+    <div style="margin-top: 14px; border-top: 1px solid var(--border-color); padding-top: 10px;">
+      <span class="detail-key">Unit Notes</span>
+      <p style="margin-top: 4px; color: var(--dark-slate);">{{ unit.remarks }}</p>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

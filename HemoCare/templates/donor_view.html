@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+
+{% block title %}Donor Profile - {{ donor.donor_code }}{% endblock %}
+{% block page_title %}Donor Profile: {{ donor.name }} ({{ donor.donor_code }}){% endblock %}
+
+{% block content %}
+<div class="card-box" style="margin-bottom: 24px;">
+  <div class="card-header">
+    <div class="card-title">Donor Master Profile</div>
+    <div class="btn-action-group">
+      <a href="{{ url_for('donor_edit', donor_id=donor.id) }}" class="btn btn-sm btn-secondary">Edit Profile</a>
+      <a href="{{ url_for('donors') }}" class="btn btn-sm btn-secondary">&larr; Back to Directory</a>
+    </div>
+  </div>
+  <div class="card-body">
+    <div class="detail-view-grid">
+      <div class="detail-item">
+        <span class="detail-key">Donor Code</span>
+        <span class="detail-val" style="color: var(--primary-red);">{{ donor.donor_code }}</span>
+      </div>
+      <div class="detail-item">
+        <span class="detail-key">Full Name</span>
+        <span class="detail-val">{{ donor.name }}</span>
+      </div>
+      <div class="detail-item">
+        <span class="detail-key">Blood Group</span>
+        <span class="detail-val"><span class="badge badge-blood">{{ donor.blood_group }}</span></span>
+      </div>
+      <div class="detail-item">
+        <span class="detail-key">Age / Gender</span>
+        <span class="detail-val">{{ donor.age }} years / {{ donor.gender }}</span>
+      </div>
+      <div class="detail-item">
+        <span class="detail-key">Contact Phone</span>
+        <span class="detail-val">{{ donor.phone }}</span>
+      </div>
+      <div class="detail-item">
+        <span class="detail-key">Email Address</span>
+        <span class="detail-val">{{ donor.email or 'N/A' }}</span>
+      </div>
+      <div class="detail-item">
+        <span class="detail-key">Donor Type</span>
+        <span class="detail-val">{{ donor.donor_type }}</span>
+      </div>
+      <div class="detail-item">
+        <span class="detail-key">Current Status</span>
+        <span class="detail-val"><span class="badge badge-{{ donor.status.lower() }}">{{ donor.status }}</span></span>
+      </div>
+      <div class="detail-item">
+        <span class="detail-key">Last Donation Date</span>
+        <span class="detail-val">{{ donor.last_donation_date or 'No previous records' }}</span>
+      </div>
+      <div class="detail-item">
+        <span class="detail-key">Registration Date</span>
+        <span class="detail-val">{{ donor.created_at[:10] }}</span>
+      </div>
+    </div>
+
+    {% if donor.address %}
+    <div style="margin-top: 14px; border-top: 1px solid var(--border-color); padding-top: 10px;">
+      <span class="detail-key">Residential Address</span>
+      <p style="margin-top: 4px; color: var(--dark-slate);">{{ donor.address }}</p>
+    </div>
+    {% endif %}
+
+    {% if donor.remarks %}
+    <div style="margin-top: 10px;">
+      <span class="detail-key">Clinical Remarks</span>
+      <p style="margin-top: 4px; color: var(--dark-slate);">{{ donor.remarks }}</p>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Donation History -->
+<div class="card-box">
+  <div class="card-header">
+    <div class="card-title">Donation History ({{ history|length }})</div>
+    {% if donor.status == 'Active' %}
+    <a href="{{ url_for('donation_add') }}" class="btn btn-sm btn-primary">+ Record Donation for this Donor</a>
+    {% endif %}
+  </div>
+  <div class="table-responsive">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Donation ID</th>
+          <th>Donation Date</th>
+          <th>Type</th>
+          <th>Volume (mL)</th>
+          <th>Bag / Unit No.</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for don in history %}
+        <tr>
+          <td><strong>{{ don.donation_code }}</strong></td>
+          <td>{{ don.donation_date }}</td>
+          <td>{{ don.donation_type }}</td>
+          <td>{{ don.volume_ml }} mL</td>
+          <td><code>{{ don.bag_number }}</code></td>
+          <td><span class="badge badge-{{ don.status.lower() }}">{{ don.status }}</span></td>
+          <td>
+            <a href="{{ url_for('serology_record', donation_id=don.id) }}" class="btn btn-sm btn-secondary">Screen Serology</a>
+          </td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="7">
+            <div class="empty-state">
+              <div class="empty-state-title">No donations recorded yet</div>
+              {% if donor.status == 'Active' %}
+              <a href="{{ url_for('donation_add') }}" class="btn btn-primary" style="margin-top: 8px;">+ Record First Donation</a>
+              {% endif %}
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

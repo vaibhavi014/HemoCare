@@ -1,0 +1,175 @@
+{% extends "base.html" %}
+
+{% block title %}Operational Instructions - HEMOCARE{% endblock %}
+{% block page_title %}Standard Operating Procedures &amp; Instructions Manual{% endblock %}
+
+{% block content %}
+<div class="card-box" style="max-width: 960px; margin: 0 auto 30px;">
+  <div class="card-header" style="background: linear-gradient(135deg, #fff5f5 0%, #ffffff 100%);">
+    <div>
+      <div class="card-title" style="font-size: 18px; color: var(--primary-red);">HEMOCARE: Offline Blood Bank Management System</div>
+      <div style="font-size: 12px; color: var(--light-slate); margin-top: 4px;">Standard Operating Procedures (SOP) &bull; Safe Blood &mdash; Healthier Tomorrow</div>
+    </div>
+  </div>
+
+  <div class="card-body" style="font-size: 14px; line-height: 1.7; color: var(--dark-slate);">
+    <!-- Overview -->
+    <section style="margin-bottom: 24px;">
+      <h3 style="color: var(--primary-red); margin-bottom: 8px; font-size: 16px;">1. System Architecture &amp; Offline Operation</h3>
+      <p>
+        HEMOCARE is a 100% self-contained, offline-first Blood Bank Management System designed for hospital transfusion services, regional blood distribution centers, and mobile blood drives. It requires no active internet connection, no external CDNs, and stores all operational records in an embedded SQLite database (<code>bloodbank.db</code>).
+      </p>
+    </section>
+
+    <!-- Workflow Diagram -->
+    <section style="margin-bottom: 24px; background-color: #f8fafc; padding: 16px; border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
+      <h3 style="color: var(--dark-slate); margin-bottom: 10px; font-size: 15px;">Standard Blood Banking Lifecycle</h3>
+      <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center; font-weight: 600; font-size: 13px;">
+        <span class="badge badge-blood">1. Donor Master</span> &rarr;
+        <span class="badge badge-info">2. Blood Donation</span> &rarr;
+        <span class="badge badge-warning">3. Serology Screening</span> &rarr;
+        <span class="badge badge-success">4. Component Inventory</span> &rarr;
+        <span class="badge badge-info">5. Hospital Issue</span>
+      </div>
+      <div style="margin-top: 10px; font-size: 12.5px; color: var(--light-slate);">
+        <em>Discard Path:</em> Any unit found to have Reactive serology, damaged containers, or exceeded shelf life moves directly to <span class="badge badge-danger">Discard / Wastage</span>.
+      </div>
+    </section>
+
+    <!-- Section 2: Login -->
+    <section style="margin-bottom: 24px;">
+      <h3 style="color: var(--primary-red); margin-bottom: 8px; font-size: 16px;">2. User Authentication</h3>
+      <p>
+        Access to HEMOCARE is strictly authenticated through server-side hashed credentials and secure sessions.
+      </p>
+      <ul style="margin-left: 20px; margin-top: 6px;">
+        <li>Default administrative credentials: <strong>Username:</strong> <code>admin</code> | <strong>Password:</strong> <code>admin123</code></li>
+        <li>Always click <strong>Sign Out</strong> from the sidebar when leaving the blood bank workstation.</li>
+      </ul>
+    </section>
+
+    <!-- Section 3: Donor Master -->
+    <section style="margin-bottom: 24px;">
+      <h3 style="color: var(--primary-red); margin-bottom: 8px; font-size: 16px;">3. Donor Master</h3>
+      <p>
+        Register voluntary or replacement blood donors with demographics, contact information, and blood group verification.
+      </p>
+      <ul style="margin-left: 20px; margin-top: 6px;">
+        <li>Unique Donor IDs (e.g. <code>DNR0001</code>) are generated automatically.</li>
+        <li>Accepted ABO/Rh Blood Groups: <code>A+</code>, <code>A-</code>, <code>B+</code>, <code>B-</code>, <code>AB+</code>, <code>AB-</code>, <code>O+</code>, <code>O-</code>.</li>
+        <li>Eligible donor age is standardly between 18 and 65 years. Donors marked as <em>Deferred</em> are temporarily restricted from blood collection.</li>
+      </ul>
+    </section>
+
+    <!-- Section 4: Donation Register -->
+    <section style="margin-bottom: 24px;">
+      <h3 style="color: var(--primary-red); margin-bottom: 8px; font-size: 16px;">4. Recording Blood Donation</h3>
+      <p>
+        When a donor arrives for phlebotomy:
+      </p>
+      <ul style="margin-left: 20px; margin-top: 6px;">
+        <li>Select the donor from the dropdown. The system automatically fetches Donor Name, verified Blood Group, and Age.</li>
+        <li>Enter collection volume (typically 450 mL or 350 mL) and unique collection bag barcode.</li>
+        <li>Select initial component type to register into inventory (Whole Blood, PRBC, FFP, or Platelets). Initial status is set to <em>Pending Serology</em>.</li>
+      </ul>
+    </section>
+
+    <!-- Section 5: Serology Screening -->
+    <section style="margin-bottom: 24px;">
+      <h3 style="color: var(--primary-red); margin-bottom: 8px; font-size: 16px;">5. Serology Screening (TTI Testing)</h3>
+      <p>
+        Every collected blood unit must undergo mandatory testing for Transfusion-Transmissible Infections:
+      </p>
+      <ul style="margin-left: 20px; margin-top: 6px;">
+        <li><strong>Mandatory 5-Panel Tests:</strong> HIV 1&amp;2, HBsAg (Hepatitis B), HCV (Hepatitis C), Syphilis (VDRL), and Malaria.</li>
+        <li><strong>Automated Calculation:</strong> If ANY test is <code>Reactive</code>, the overall screening result is automatically set to <code>Reactive</code>.</li>
+        <li><strong>Strict Quarantine Rule:</strong> Reactive units are immediately quarantined and prohibited from issue. Only units with <code>Non-Reactive</code> across all 5 markers can be released for clinical use.</li>
+      </ul>
+    </section>
+
+    <!-- Section 6: Supported Components -->
+    <section style="margin-bottom: 24px;">
+      <h3 style="color: var(--primary-red); margin-bottom: 8px; font-size: 16px;">6. Supported Blood Components</h3>
+      <p>
+        HEMOCARE strictly manages and tracks exactly four therapeutic blood components:
+      </p>
+      <table class="data-table" style="margin-top: 10px; max-width: 600px;">
+        <thead>
+          <tr>
+            <th>Component</th>
+            <th>Standard Shelf Life</th>
+            <th>Recommended Storage</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Whole Blood</strong></td>
+            <td>35 Days</td>
+            <td>+2&deg;C to +6&deg;C (Cold storage)</td>
+          </tr>
+          <tr>
+            <td><strong>PRBC (Packed RBCs)</strong></td>
+            <td>42 Days</td>
+            <td>+2&deg;C to +6&deg;C</td>
+          </tr>
+          <tr>
+            <td><strong>FFP (Fresh Frozen Plasma)</strong></td>
+            <td>365 Days (1 Year)</td>
+            <td>-20&deg;C or colder</td>
+          </tr>
+          <tr>
+            <td><strong>Platelets (RDP / Apheresis)</strong></td>
+            <td>5 Days</td>
+            <td>+20&deg;C to +24&deg;C (Agitator)</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- Section 7: Blood Dispatch -->
+    <section style="margin-bottom: 24px;">
+      <h3 style="color: var(--primary-red); margin-bottom: 8px; font-size: 16px;">7. Issuing Blood to Hospitals</h3>
+      <p>
+        Issuance releases a verified, compatible blood unit to an authorized hospital or clinic:
+      </p>
+      <ul style="margin-left: 20px; margin-top: 6px;">
+        <li>The system strictly blocks issuance of: Reactive units, Expired units, already Issued units, and Discarded units.</li>
+        <li>Selecting a Unit ID automatically inspects and validates eligibility in real-time.</li>
+        <li>Upon confirmation, the unit lifecycle status changes to <code>Issued</code> and stock is automatically decremented.</li>
+      </ul>
+    </section>
+
+    <!-- Section 8: Discards -->
+    <section style="margin-bottom: 24px;">
+      <h3 style="color: var(--primary-red); margin-bottom: 8px; font-size: 16px;">8. Discard &amp; Wastage Logging</h3>
+      <p>
+        Units that exceed expiry date, test reactive for infection, or suffer container breakage/leakage are documented in the Discard Register with the authorized officer's sign-off.
+      </p>
+    </section>
+
+    <!-- Section 9: Stock Calculation & Alerts -->
+    <section style="margin-bottom: 24px;">
+      <h3 style="color: var(--primary-red); margin-bottom: 8px; font-size: 16px;">9. Dynamic Stock Matrix &amp; Safety Alerts</h3>
+      <p>
+        Stock counts are never manually input. They are dynamically aggregated from all active inventory units where:
+        <br><code>status = 'Available' AND serology_status = 'Non-Reactive' AND expiry_date &gt;= Current Date</code>.
+      </p>
+      <p style="margin-top: 8px;">
+        If available units for any component fall below the safety threshold (default: 10 units), the system flags a <strong>LOW STOCK</strong> alert. Units reaching within 7 days of expiration are flagged as <strong>EXPIRING SOON</strong>.
+      </p>
+    </section>
+
+    <!-- Section 10: Reports & Export -->
+    <section style="margin-bottom: 12px;">
+      <h3 style="color: var(--primary-red); margin-bottom: 8px; font-size: 16px;">10. Exporting Reports (Excel &amp; PDF)</h3>
+      <p>
+        HEMOCARE generates 11 distinct operational reports with custom filters. Every report can be exported in two offline formats:
+      </p>
+      <ul style="margin-left: 20px; margin-top: 6px;">
+        <li><strong>Excel (.xlsx):</strong> Formatted spreadsheets generated using <code>openpyxl</code> with auto-fitted column widths, freeze panes, and custom styling.</li>
+        <li><strong>PDF (.pdf):</strong> Publication-ready medical reports generated using <code>reportlab</code> with headers, timestamps, and data tables.</li>
+      </ul>
+    </section>
+  </div>
+</div>
+{% endblock %}

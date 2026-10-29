@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block title %}{{ action }} Hospital - HEMOCARE{% endblock %}
+{% block page_title %}{{ action }} Hospital / Healthcare Center{% endblock %}
+
+{% block content %}
+<div class="card-box" style="max-width: 860px; margin: 0 auto;">
+  <div class="card-header">
+    <div class="card-title">{{ action }} Hospital Details</div>
+    <a href="{{ url_for('hospitals') }}" class="btn btn-sm btn-secondary">&larr; Back to Hospital Master</a>
+  </div>
+
+  <div class="card-body">
+    <form method="POST" action="{% if action == 'Edit' %}{{ url_for('hospital_edit', hosp_id=hosp_id) }}{% else %}{{ url_for('hospital_add') }}{% endif %}">
+      <div class="form-grid">
+        <!-- Hospital Name -->
+        <div class="form-group full-width">
+          <label class="form-label" for="name">Hospital / Center Full Name <span class="required">*</span></label>
+          <input type="text" id="name" name="name" class="form-control" placeholder="e.g. City General Memorial Hospital" value="{{ hospital.name or '' }}" required>
+        </div>
+
+        <!-- Contact Person -->
+        <div class="form-group">
+          <label class="form-label" for="contact_person">Contact Person / Blood Bank Liaison</label>
+          <input type="text" id="contact_person" name="contact_person" class="form-control" placeholder="e.g. Dr. Arthur Vance" value="{{ hospital.contact_person or '' }}">
+        </div>
+
+        <!-- Phone -->
+        <div class="form-group">
+          <label class="form-label" for="phone">Phone / Emergency Contact <span class="required">*</span></label>
+          <input type="tel" id="phone" name="phone" class="form-control" placeholder="e.g. +1 555-019-9000" value="{{ hospital.phone or '' }}" required>
+        </div>
+
+        <!-- Email -->
+        <div class="form-group">
+          <label class="form-label" for="email">Official Email</label>
+          <input type="email" id="email" name="email" class="form-control" placeholder="e.g. bloodbank@citygeneral.org" value="{{ hospital.email or '' }}">
+        </div>
+
+        <!-- License / Registration Number -->
+        <div class="form-group">
+          <label class="form-label" for="license_number">Clinical Establishment License No.</label>
+          <input type="text" id="license_number" name="license_number" class="form-control" placeholder="e.g. MED-REG-2024-8901" value="{{ hospital.license_number or '' }}">
+        </div>
+
+        <!-- Status -->
+        <div class="form-group">
+          <label class="form-label" for="status">Operational Status</label>
+          <select id="status" name="status" class="form-control">
+            <option value="Active" {% if hospital.status == 'Active' %}selected{% endif %}>Active</option>
+            <option value="Inactive" {% if hospital.status == 'Inactive' %}selected{% endif %}>Inactive</option>
+          </select>
+        </div>
+
+        <!-- Address -->
+        <div class="form-group full-width">
+          <label class="form-label" for="address">Full Address / Location</label>
+          <textarea id="address" name="address" class="form-control" rows="2" placeholder="Street address, city, state, postal code">{{ hospital.address or '' }}</textarea>
+        </div>
+
+        <!-- Remarks -->
+        <div class="form-group full-width">
+          <label class="form-label" for="remarks">Hospital Notes / Storage Facility</label>
+          <textarea id="remarks" name="remarks" class="form-control" rows="2" placeholder="Blood storage capacity, MOU details, approved emergency quotas">{{ hospital.remarks or '' }}</textarea>
+        </div>
+      </div>
+
+      <div style="margin-top: 24px; display: flex; gap: 12px; justify-content: flex-end;">
+        <a href="{{ url_for('hospitals') }}" class="btn btn-secondary">Cancel</a>
+        <button type="submit" class="btn btn-primary">{{ action }} Hospital Record</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

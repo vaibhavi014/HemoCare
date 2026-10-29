@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+{% block title %}Discard Register{% endblock %}
+{% block page_title %}Blood &amp; Component Discard / Wastage Register{% endblock %}
+
+{% block content %}
+<!-- Search & Filter Bar -->
+<form method="GET" action="{{ url_for('discards') }}" class="filter-bar">
+  <div style="flex: 2; min-width: 200px;">
+    <input type="text" name="search" class="form-control" placeholder="Search by Discard ID, Unit ID, Officer..." value="{{ search }}">
+  </div>
+
+  <div style="flex: 1; min-width: 140px;">
+    <select name="component" class="form-control">
+      <option value="">-- All Components --</option>
+      {% for comp in valid_components %}
+      <option value="{{ comp }}" {% if component == comp %}selected{% endif %}>{{ comp }}</option>
+      {% endfor %}
+    </select>
+  </div>
+
+  <div style="flex: 1; min-width: 120px;">
+    <select name="blood_group" class="form-control">
+      <option value="">-- Blood Group --</option>
+      {% for bg in valid_blood_groups %}
+      <option value="{{ bg }}" {% if blood_group == bg %}selected{% endif %}>{{ bg }}</option>
+      {% endfor %}
+    </select>
+  </div>
+
+  <div style="flex: 1; min-width: 150px;">
+    <select name="reason" class="form-control">
+      <option value="">-- Discard Reason --</option>
+      <option value="Expired" {% if reason == 'Expired' %}selected{% endif %}>Expired</option>
+      <option value="Reactive Serology" {% if reason == 'Reactive Serology' %}selected{% endif %}>Reactive Serology</option>
+      <option value="Damaged Bag" {% if reason == 'Damaged Bag' %}selected{% endif %}>Damaged Bag</option>
+      <option value="Leakage" {% if reason == 'Leakage' %}selected{% endif %}>Leakage</option>
+      <option value="Storage Issue" {% if reason == 'Storage Issue' %}selected{% endif %}>Storage Issue</option>
+      <option value="Other" {% if reason == 'Other' %}selected{% endif %}>Other</option>
+    </select>
+  </div>
+
+  <button type="submit" class="btn btn-secondary">Filter</button>
+  <a href="{{ url_for('discards') }}" class="btn btn-secondary">Reset</a>
+  <a href="{{ url_for('discard_new') }}" class="btn btn-danger" style="margin-left: auto;">+ Discard Blood Unit</a>
+</form>
+
+<div class="card-box">
+  <div class="card-header">
+    <div class="card-title">Discarded Blood &amp; Component Units ({{ discards|length }})</div>
+  </div>
+  <div class="table-responsive">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Discard ID</th>
+          <th>Unit ID</th>
+          <th>Blood Group</th>
+          <th>Component</th>
+          <th>Discard Date</th>
+          <th>Reason</th>
+          <th>Authorized By</th>
+          <th>Remarks</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for d in discards %}
+        <tr>
+          <td><strong style="color: var(--danger-color);">{{ d.discard_code }}</strong></td>
+          <td><code>{{ d.unit_code }}</code></td>
+          <td><span class="badge badge-blood">{{ d.blood_group }}</span></td>
+          <td>{{ d.component_type }}</td>
+          <td>{{ d.discard_date }}</td>
+          <td><span class="badge badge-danger">{{ d.reason }}</span></td>
+          <td>{{ d.authorized_by }}</td>
+          <td>{{ d.remarks or '-' }}</td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="8">
+            <div class="empty-state">
+              <div class="empty-state-title">No discard records found</div>
+              <p>No blood units have been marked for discard under the selected criteria.</p>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

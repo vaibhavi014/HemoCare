@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% block title %}Serology Register{% endblock %}
+{% block page_title %}Transfusion-Transmissible Infections (TTI) Serology Screening{% endblock %}
+
+{% block content %}
+<!-- Search & Filter Bar -->
+<form method="GET" action="{{ url_for('serology') }}" class="filter-bar">
+  <div style="flex: 2; min-width: 220px;">
+    <input type="text" name="search" class="form-control" placeholder="Search by Serology ID, Donation ID, Donor Name..." value="{{ search }}">
+  </div>
+
+  <div style="flex: 1; min-width: 160px;">
+    <select name="result" class="form-control">
+      <option value="">-- All Screening Results --</option>
+      <option value="Non-Reactive" {% if result == 'Non-Reactive' %}selected{% endif %}>Non-Reactive (Safe)</option>
+      <option value="Reactive" {% if result == 'Reactive' %}selected{% endif %}>Reactive (Infected / Ineligible)</option>
+      <option value="Pending" {% if result == 'Pending' %}selected{% endif %}>Pending (Testing Incomplete)</option>
+    </select>
+  </div>
+
+  <button type="submit" class="btn btn-secondary">Filter</button>
+  <a href="{{ url_for('serology') }}" class="btn btn-secondary">Reset</a>
+  <a href="{{ url_for('serology_record') }}" class="btn btn-primary" style="margin-left: auto;">+ Record Serology Screening</a>
+</form>
+
+<div class="card-box">
+  <div class="card-header">
+    <div class="card-title">Serology Screening Test Logs ({{ records|length }})</div>
+  </div>
+  <div class="table-responsive">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Serology ID</th>
+          <th>Donation</th>
+          <th>Donor</th>
+          <th>Blood Group</th>
+          <th>HIV I &amp; II</th>
+          <th>HBsAg</th>
+          <th>HCV</th>
+          <th>Syphilis</th>
+          <th>Malaria</th>
+          <th>Overall Result</th>
+          <th>Test Date</th>
+          <th style="text-align: right;">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for s in records %}
+        <tr>
+          <td><strong style="color: var(--primary-red);">{{ s.serology_code }}</strong></td>
+          <td><strong>{{ s.donation_code }}</strong></td>
+          <td>
+            {{ s.donor_name }}
+            <div style="font-size: 11px; color: var(--light-slate);">{{ s.donor_code }}</div>
+          </td>
+          <td><span class="badge badge-blood">{{ s.blood_group }}</span></td>
+          <td><span class="badge badge-{{ s.hiv.lower() }}">{{ s.hiv }}</span></td>
+          <td><span class="badge badge-{{ s.hbsag.lower() }}">{{ s.hbsag }}</span></td>
+          <td><span class="badge badge-{{ s.hcv.lower() }}">{{ s.hcv }}</span></td>
+          <td><span class="badge badge-{{ s.syphilis.lower() }}">{{ s.syphilis }}</span></td>
+          <td><span class="badge badge-{{ s.malaria.lower() }}">{{ s.malaria }}</span></td>
+          <td>
+            <span class="badge badge-{{ s.overall_result.lower() }}" style="font-size: 12px; font-weight: bold;">
+              {{ s.overall_result }}
+            </span>
+          </td>
+          <td>{{ s.test_date }}</td>
+          <td style="text-align: right;">
+            <a href="{{ url_for('serology_record', donation_id=s.donation_id) }}" class="btn btn-sm btn-secondary">Edit / Review</a>
+          </td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="12">
+            <div class="empty-state">
+              <div class="empty-state-title">No serology records found</div>
+              <p>Record a screening test for a recent donation.</p>
+              <a href="{{ url_for('serology_record') }}" class="btn btn-primary" style="margin-top: 12px;">+ Record Serology</a>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

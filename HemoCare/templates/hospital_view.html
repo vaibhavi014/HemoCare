@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+
+{% block title %}Hospital Details - {{ hospital.name }}{% endblock %}
+{% block page_title %}Hospital Profile: {{ hospital.name }} ({{ hospital.hospital_code }}){% endblock %}
+
+{% block content %}
+<div class="card-box" style="margin-bottom: 24px;">
+  <div class="card-header">
+    <div class="card-title">Hospital Master Profile</div>
+    <div class="btn-action-group">
+      <a href="{{ url_for('hospital_edit', hosp_id=hospital.id) }}" class="btn btn-sm btn-secondary">Edit Hospital</a>
+      <a href="{{ url_for('hospitals') }}" class="btn btn-sm btn-secondary">&larr; Back to Hospital Master</a>
+    </div>
+  </div>
+  <div class="card-body">
+    <div class="detail-view-grid">
+      <div class="detail-item">
+        <span class="detail-key">Hospital Code</span>
+        <span class="detail-val" style="color: var(--primary-red);">{{ hospital.hospital_code }}</span>
+      </div>
+      <div class="detail-item">
+        <span class="detail-key">Full Name</span>
+        <span class="detail-val">{{ hospital.name }}</span>
+      </div>
+      <div class="detail-item">
+        <span class="detail-key">Contact Person</span>
+        <span class="detail-val">{{ hospital.contact_person or '-' }}</span>
+      </div>
+      <div class="detail-item">
+        <span class="detail-key">Phone</span>
+        <span class="detail-val">{{ hospital.phone }}</span>
+      </div>
+      <div class="detail-item">
+        <span class="detail-key">Email</span>
+        <span class="detail-val">{{ hospital.email or '-' }}</span>
+      </div>
+      <div class="detail-item">
+        <span class="detail-key">License / Reg Number</span>
+        <span class="detail-val"><code>{{ hospital.license_number or '-' }}</code></span>
+      </div>
+      <div class="detail-item">
+        <span class="detail-key">Status</span>
+        <span class="detail-val"><span class="badge badge-{{ hospital.status.lower() }}">{{ hospital.status }}</span></span>
+      </div>
+      <div class="detail-item">
+        <span class="detail-key">Registered On</span>
+        <span class="detail-val">{{ hospital.created_at[:10] }}</span>
+      </div>
+    </div>
+
+    {% if hospital.address %}
+    <div style="margin-top: 14px; border-top: 1px solid var(--border-color); padding-top: 10px;">
+      <span class="detail-key">Address</span>
+      <p style="margin-top: 4px; color: var(--dark-slate);">{{ hospital.address }}</p>
+    </div>
+    {% endif %}
+
+    {% if hospital.remarks %}
+    <div style="margin-top: 10px;">
+      <span class="detail-key">Remarks</span>
+      <p style="margin-top: 4px; color: var(--dark-slate);">{{ hospital.remarks }}</p>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Hospital Issues History -->
+<div class="card-box">
+  <div class="card-header">
+    <div class="card-title">Blood Units Issued to this Hospital ({{ issues|length }})</div>
+    {% if hospital.status == 'Active' %}
+    <a href="{{ url_for('issue_new') }}" class="btn btn-sm btn-primary">+ Issue Blood to Hospital</a>
+    {% endif %}
+  </div>
+  <div class="table-responsive">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Issue Slip ID</th>
+          <th>Issue Date</th>
+          <th>Unit ID</th>
+          <th>Component</th>
+          <th>Blood Group</th>
+          <th>Patient Name</th>
+          <th>Doctor / Dept</th>
+          <th>Issued By</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for iss in issues %}
+        <tr>
+          <td><strong style="color: var(--primary-red);">{{ iss.issue_code }}</strong></td>
+          <td>{{ iss.issue_date }}</td>
+          <td><code>{{ iss.unit_code }}</code></td>
+          <td>{{ iss.component_type }}</td>
+          <td><span class="badge badge-blood">{{ iss.blood_group }}</span></td>
+          <td>{{ iss.patient_name }}</td>
+          <td>{{ iss.doctor_dept or '-' }}</td>
+          <td>{{ iss.issued_by }}</td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="8">
+            <div class="empty-state">
+              <div class="empty-state-title">No issues logged for this hospital yet</div>
+              {% if hospital.status == 'Active' %}
+              <a href="{{ url_for('issue_new') }}" class="btn btn-primary" style="margin-top: 8px;">+ Issue Blood Unit</a>
+              {% endif %}
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

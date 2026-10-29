@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+
+{% block title %}Donation Register{% endblock %}
+{% block page_title %}Blood Donation Register{% endblock %}
+
+{% block content %}
+<!-- Search & Date Filter Bar -->
+<form method="GET" action="{{ url_for('donations') }}" class="filter-bar">
+  <div style="flex: 2; min-width: 220px;">
+    <input type="text" name="search" class="form-control" placeholder="Search by Donation ID, Donor, Bag Number..." value="{{ search }}">
+  </div>
+
+  <div style="flex: 1; min-width: 140px;">
+    <select name="blood_group" class="form-control">
+      <option value="">-- All Blood Groups --</option>
+      {% for bg in valid_blood_groups %}
+      <option value="{{ bg }}" {% if blood_group == bg %}selected{% endif %}>{{ bg }}</option>
+      {% endfor %}
+    </select>
+  </div>
+
+  <div style="flex: 1; min-width: 130px;">
+    <input type="date" name="date_from" class="form-control" placeholder="Date From" value="{{ date_from }}">
+  </div>
+
+  <div style="flex: 1; min-width: 130px;">
+    <input type="date" name="date_to" class="form-control" placeholder="Date To" value="{{ date_to }}">
+  </div>
+
+  <button type="submit" class="btn btn-secondary">Filter</button>
+  <a href="{{ url_for('donations') }}" class="btn btn-secondary">Reset</a>
+  <a href="{{ url_for('donation_add') }}" class="btn btn-primary" style="margin-left: auto;">+ New Blood Donation</a>
+</form>
+
+<div class="card-box">
+  <div class="card-header">
+    <div class="card-title">Recorded Blood Donations ({{ donations|length }})</div>
+  </div>
+  <div class="table-responsive">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Donation ID</th>
+          <th>Donor</th>
+          <th>Blood Group</th>
+          <th>Donation Date</th>
+          <th>Type</th>
+          <th>Volume</th>
+          <th>Bag / Unit Code</th>
+          <th>Status</th>
+          <th style="text-align: right;">Serology / Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for don in donations %}
+        <tr>
+          <td><strong style="color: var(--primary-red);">{{ don.donation_code }}</strong></td>
+          <td>
+            <a href="{{ url_for('donor_view', donor_id=don.donor_id) }}" style="color: inherit; text-decoration: none;">
+              <strong>{{ don.donor_name }}</strong>
+              <div style="font-size: 11px; color: var(--light-slate);">{{ don.donor_code }}</div>
+            </a>
+          </td>
+          <td><span class="badge badge-blood">{{ don.blood_group }}</span></td>
+          <td>{{ don.donation_date }}</td>
+          <td>{{ don.donation_type }}</td>
+          <td>{{ don.volume_ml }} mL</td>
+          <td><code>{{ don.bag_number }}</code></td>
+          <td><span class="badge badge-{{ don.status.lower() }}">{{ don.status }}</span></td>
+          <td style="text-align: right;">
+            <div class="btn-action-group" style="justify-content: flex-end;">
+              <a href="{{ url_for('serology_record', donation_id=don.id) }}" class="btn btn-sm btn-primary">
+                Screen Serology
+              </a>
+            </div>
+          </td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="9">
+            <div class="empty-state">
+              <div class="empty-state-title">No donation records found</div>
+              <p>Record a new donation to begin the blood banking cycle.</p>
+              <a href="{{ url_for('donation_add') }}" class="btn btn-primary" style="margin-top: 12px;">+ Record Donation</a>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

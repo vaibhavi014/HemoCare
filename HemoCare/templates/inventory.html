@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+
+{% block title %}Component Inventory{% endblock %}
+{% block page_title %}Blood & Component Inventory Management{% endblock %}
+
+{% block content %}
+<!-- Search & Filter Bar -->
+<form method="GET" action="{{ url_for('inventory') }}" class="filter-bar">
+  <div style="flex: 2; min-width: 200px;">
+    <input type="text" name="search" class="form-control" placeholder="Search by Unit ID, Donation ID, Location..." value="{{ search }}">
+  </div>
+
+  <div style="flex: 1; min-width: 140px;">
+    <select name="component" class="form-control">
+      <option value="">-- All Components --</option>
+      {% for comp in valid_components %}
+      <option value="{{ comp }}" {% if component == comp %}selected{% endif %}>{{ comp }}</option>
+      {% endfor %}
+    </select>
+  </div>
+
+  <div style="flex: 1; min-width: 120px;">
+    <select name="blood_group" class="form-control">
+      <option value="">-- Blood Group --</option>
+      {% for bg in valid_blood_groups %}
+      <option value="{{ bg }}" {% if blood_group == bg %}selected{% endif %}>{{ bg }}</option>
+      {% endfor %}
+    </select>
+  </div>
+
+  <div style="flex: 1; min-width: 120px;">
+    <select name="status" class="form-control">
+      <option value="">-- Status --</option>
+      <option value="Available" {% if status == 'Available' %}selected{% endif %}>Available</option>
+      <option value="Issued" {% if status == 'Issued' %}selected{% endif %}>Issued</option>
+      <option value="Discarded" {% if status == 'Discarded' %}selected{% endif %}>Discarded</option>
+      <option value="Expired" {% if status == 'Expired' %}selected{% endif %}>Expired</option>
+      <option value="Quarantined" {% if status == 'Quarantined' %}selected{% endif %}>Quarantined</option>
+    </select>
+  </div>
+
+  <div style="flex: 1; min-width: 130px;">
+    <select name="expiring_days" class="form-control">
+      <option value="">-- Expiry Filter --</option>
+      <option value="3" {% if expiring_days == '3' %}selected{% endif %}>Expiring in 3 Days</option>
+      <option value="7" {% if expiring_days == '7' %}selected{% endif %}>Expiring in 7 Days</option>
+      <option value="14" {% if expiring_days == '14' %}selected{% endif %}>Expiring in 14 Days</option>
+    </select>
+  </div>
+
+  <button type="submit" class="btn btn-secondary">Filter</button>
+  <a href="{{ url_for('inventory') }}" class="btn btn-secondary">Reset</a>
+  <a href="{{ url_for('inventory_add') }}" class="btn btn-primary" style="margin-left: auto;">+ Register Unit</a>
+</form>
+
+<div class="card-box">
+  <div class="card-header">
+    <div class="card-title">Inventory Records ({{ units|length }})</div>
+    <div style="font-size: 12px; color: var(--light-slate);">
+      Supported Components: <strong>Whole Blood</strong> &bull; <strong>PRBC</strong> &bull; <strong>FFP</strong> &bull; <strong>Platelets</strong>
+    </div>
+  </div>
+  <div class="table-responsive">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Unit ID</th>
+          <th>Component</th>
+          <th>Blood Group</th>
+          <th>Volume</th>
+          <th>Collection Date</th>
+          <th>Expiry Date</th>
+          <th>Storage Location</th>
+          <th>Serology</th>
+          <th>Inventory Status</th>
+          <th style="text-align: right;">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for u in units %}
+        <tr>
+          <td>
+            <a href="{{ url_for('inventory_view', unit_id=u.id) }}" style="font-weight: 700; color: var(--primary-red); text-decoration: none;">
+              {{ u.unit_code }}
+            </a>
+          </td>
+          <td><strong>{{ u.component_type }}</strong></td>
+          <td><span class="badge badge-blood">{{ u.blood_group }}</span></td>
+          <td>{{ u.volume_ml }} mL</td>
+          <td>{{ u.collection_date }}</td>
+          <td>
+            {% if u.status == 'Available' and u.expiry_date <= today_date %}
+            <span style="color: var(--danger-color); font-weight: bold;">{{ u.expiry_date }} (Expired)</span>
+            {% else %}
+            {{ u.expiry_date }}
+            {% endif %}
+          </td>
+          <td>{{ u.storage_location }}</td>
+          <td><span class="badge badge-{{ u.serology_status.lower() }}">{{ u.serology_status }}</span></td>
+          <td>
+            <span class="badge badge-{{ u.status.lower() }}">{{ u.status }}</span>
+          </td>
+          <td style="text-align: right;">
+            <div class="btn-action-group" style="justify-content: flex-end;">
+              <a href="{{ url_for('inventory_view', unit_id=u.id) }}" class="btn btn-sm btn-secondary">Inspect</a>
+              {% if u.status == 'Available' and u.serology_status == 'Non-Reactive' and u.expiry_date >= today_date %}
+              <a href="{{ url_for('issue_new') }}?unit_id={{ u.id }}" class="btn btn-sm btn-primary">Issue</a>
+              {% endif %}
+            </div>
+          </td>
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="10">
+            <div class="empty-state">
+              <div class="empty-state-title">No inventory units found</div>
+              <p>Try adjusting your search criteria or register a new unit.</p>
+              <a href="{{ url_for('inventory_add') }}" class="btn btn-primary" style="margin-top: 12px;">+ Add Component Unit</a>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

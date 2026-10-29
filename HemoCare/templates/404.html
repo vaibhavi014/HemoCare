@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block title %}Page Not Found - HEMOCARE{% endblock %}
+{% block page_title %}Resource Not Found{% endblock %}
+
+{% block content %}
+<div class="card-box" style="max-width: 600px; margin: 40px auto; text-align: center; padding: 40px 20px;">
+  <div style="font-size: 54px; font-weight: 800; color: var(--primary-red); margin-bottom: 12px;">404</div>
+  <h2 style="font-size: 20px; margin-bottom: 12px; color: var(--dark-slate);">Requested Page or Record Not Found</h2>
+  <p style="color: var(--light-slate); margin-bottom: 24px;">
+    The requested resource could not be found or may have been relocated.
+  </p>
+  <a href="{{ url_for('dashboard') }}" class="btn btn-primary">&larr; Return to Dashboard</a>
+</div>
+{% endblock %}

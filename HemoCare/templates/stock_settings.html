@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block title %}Stock Settings - HEMOCARE{% endblock %}
+{% block page_title %}Configure Inventory Alert Thresholds{% endblock %}
+
+{% block content %}
+<div class="card-box" style="max-width: 800px; margin: 0 auto;">
+  <div class="card-header">
+    <div class="card-title">Low Stock Limits &amp; Expiry Aging Parameters</div>
+    <a href="{{ url_for('stock') }}" class="btn btn-sm btn-secondary">&larr; Back to Stock Matrix</a>
+  </div>
+
+  <div class="card-body">
+    <form method="POST" action="{{ url_for('stock_settings') }}">
+      <p style="margin-bottom: 20px; color: var(--light-slate); font-size: 13.5px;">
+        Define minimum safety reserve thresholds for each supported blood component. When available inventory falls below this number, the dashboard and stock screens will trigger high-priority alerts.
+      </p>
+
+      <div class="table-responsive" style="margin-bottom: 24px;">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Blood Component</th>
+              <th>Minimum Stock Level (Units)</th>
+              <th>Expiring Soon Alert (Days before expiry)</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for comp in valid_components %}
+            {% set s = settings.get(comp, {}) %}
+            <tr>
+              <td><strong>{{ comp }}</strong></td>
+              <td>
+                <input type="number" name="min_stock_{{ comp }}" class="form-control" min="1" max="1000" value="{{ s.min_stock_level if s else 10 }}" required style="max-width: 140px;">
+              </td>
+              <td>
+                <input type="number" name="exp_days_{{ comp }}" class="form-control" min="1" max="90" value="{{ s.expiring_days_threshold if s else 7 }}" required style="max-width: 140px;">
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <div style="display: flex; gap: 12px; justify-content: flex-end;">
+        <a href="{{ url_for('stock') }}" class="btn btn-secondary">Cancel</a>
+        <button type="submit" class="btn btn-primary">Save Settings</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

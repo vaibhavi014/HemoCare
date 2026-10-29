@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+
+{% block title %}Stock Matrix - HEMOCARE{% endblock %}
+{% block page_title %}Blood &amp; Component Stock Matrix{% endblock %}
+
+{% block content %}
+<!-- Threshold Status Bar -->
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin-bottom: 24px;">
+  {% for comp in valid_components %}
+  {% set current_stock = metrics[comp.lower().replace(' ', '_')] %}
+  {% set min_lvl = settings[comp].min_stock if comp in settings else 10 %}
+  {% set is_low = current_stock < min_lvl %}
+  <div class="stat-card {% if is_low %}alert-card{% else %}accent-card{% endif %}">
+    <div class="stat-label">{{ comp }}</div>
+    <div class="stat-val-row">
+      <span class="stat-value" {% if is_low %}style="color: var(--danger-color);"{% endif %}>{{ current_stock }} units</span>
+      {% if is_low %}
+      <span class="badge badge-danger">LOW STOCK</span>
+      {% else %}
+      <span class="badge badge-success">SUFFICIENT</span>
+      {% endif %}
+    </div>
+    <div class="stat-subtext">Min Target: {{ min_lvl }} units {% if is_low %}(Deficit: -{{ min_lvl - current_stock }}){% endif %}</div>
+  </div>
+  {% endfor %}
+</div>
+
+<!-- Filter Bar -->
+<form method="GET" action="{{ url_for('stock') }}" class="filter-bar">
+  <div style="flex: 1; min-width: 180px;">
+    <select name="component" class="form-control">
+      <option value="">-- All 4 Components --</option>
+      {% for comp in valid_components %}
+      <option value="{{ comp }}" {% if selected_component == comp %}selected{% endif %}>{{ comp }}</option>
+      {% endfor %}
+    </select>
+  </div>
+
+  <div style="flex: 1; min-width: 150px;">
+    <select name="blood_group" class="form-control">
+      <option value="">-- All Blood Groups --</option>
+      {% for bg in valid_blood_groups %}
+      <option value="{{ bg }}" {% if selected_bg == bg %}selected{% endif %}>{{ bg }}</option>
+      {% endfor %}
+    </select>
+  </div>
+
+  <button type="submit" class="btn btn-secondary">Filter Matrix</button>
+  <a href="{{ url_for('stock') }}" class="btn btn-secondary">Reset</a>
+  <a href="{{ url_for('stock_settings') }}" class="btn btn-primary" style="margin-left: auto;">Configure Min Stock Limits</a>
+</form>
+
+<div class="card-box">
+  <div class="card-header">
+    <div class="card-title">Real-Time Inventory Stock Summary</div>
+    <div style="font-size: 12px; color: var(--light-slate);">
+      * Available column only counts <strong>Non-Reactive &amp; Unexpired</strong> units.
+    </div>
+  </div>
+  <div class="table-responsive">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Component Type</th>
+          <th>Blood Group</th>
+          <th style="text-align: right;">Available (Ready)</th>
+          <th style="text-align: right;">Issued</th>
+          <th style="text-align: right;">Discarded</th>
+          <th style="text-align: right;">Expired</th>
+          <th style="text-align: right;">Total Units</th>
+          <th style="text-align: center;">Inventory Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% set total_avail = namespace(val=0) %}
+        {% set total_iss = namespace(val=0) %}
+        {% set total_disc = namespace(val=0) %}
+        {% set total_exp = namespace(val=0) %}
+        {% set total_all = namespace(val=0) %}
+
+        {% for item in matrix %}
+        {% set total_avail.val = total_avail.val + item.available %}
+        {% set total_iss.val = total_iss.val + item.issued %}
+        {% set total_disc.val = total_disc.val + item.discarded %}
+        {% set total_exp.val = total_exp.val + item.expired %}
+        {% set total_all.val = total_all.val + item.total %}
+        <tr>
+          <td><strong>{{ item.component }}</strong></td>
+          <td><span class="badge badge-blood">{{ item.blood_group }}</span></td>
+          <td style="text-align: right; font-weight: bold; color: {% if item.available > 0 %}var(--success-color){% else %}var(--danger-color){% endif %};">
+            {{ item.available }}
+          </td>
+          <td style="text-align: right; color: var(--info-color);">{{ item.issued }}</td>
+          <td style="text-align: right; color: var(--danger-color);">{{ item.discarded }}</td>
+          <td style="text-align: right; color: var(--warning-color);">{{ item.expired }}</td>
+          <td style="text-align: right; font-weight: bold;">{{ item.total }}</td>
+          <td style="text-align: center;">
+            {% if item.available == 0 %}
+            <span class="badge badge-danger">Out of Stock</span>
+            {% elif item.available < 3 %}
+            <span class="badge badge-warning">Critical Low</span>
+            {% else %}
+            <span class="badge badge-success">In Stock</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+      <tfoot>
+        <tr>
+          <td colspan="2">TOTAL ACROSS ALL SELECTED CATEGORIES</td>
+          <td style="text-align: right; color: var(--success-color);">{{ total_avail.val }}</td>
+          <td style="text-align: right; color: var(--info-color);">{{ total_iss.val }}</td>
+          <td style="text-align: right; color: var(--danger-color);">{{ total_disc.val }}</td>
+          <td style="text-align: right; color: var(--warning-color);">{{ total_exp.val }}</td>
+          <td style="text-align: right; font-size: 15px;">{{ total_all.val }}</td>
+          <td></td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+</div>
+{% endblock %}

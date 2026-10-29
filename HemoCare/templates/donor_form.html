@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+
+{% block title %}{{ action }} Donor - HEMOCARE{% endblock %}
+{% block page_title %}{{ action }} Blood Donor{% endblock %}
+
+{% block content %}
+<div class="card-box" style="max-width: 860px; margin: 0 auto;">
+  <div class="card-header">
+    <div class="card-title">{{ action }} Donor Information</div>
+    <a href="{{ url_for('donors') }}" class="btn btn-sm btn-secondary">&larr; Back to Donor Master</a>
+  </div>
+
+  <div class="card-body">
+    <form method="POST" action="{% if action == 'Edit' %}{{ url_for('donor_edit', donor_id=donor_id) }}{% else %}{{ url_for('donor_add') }}{% endif %}">
+      <div class="form-grid">
+        <!-- Full Name -->
+        <div class="form-group">
+          <label class="form-label" for="name">Donor Full Name <span class="required">*</span></label>
+          <input type="text" id="name" name="name" class="form-control" placeholder="e.g. Johnathan Doe" value="{{ donor.name or '' }}" required>
+        </div>
+
+        <!-- Blood Group -->
+        <div class="form-group">
+          <label class="form-label" for="blood_group">Blood Group <span class="required">*</span></label>
+          <select id="blood_group" name="blood_group" class="form-control" required>
+            <option value="">-- Select Blood Group --</option>
+            {% for bg in valid_blood_groups %}
+            <option value="{{ bg }}" {% if donor.blood_group == bg %}selected{% endif %}>{{ bg }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <!-- Age -->
+        <div class="form-group">
+          <label class="form-label" for="age">Age (Years) <span class="required">*</span></label>
+          <input type="number" id="age" name="age" class="form-control" min="18" max="65" placeholder="18-65" value="{{ donor.age or '' }}" required>
+          <span class="form-help">Standard eligible donation age: 18 - 65 years.</span>
+        </div>
+
+        <!-- Gender -->
+        <div class="form-group">
+          <label class="form-label" for="gender">Gender <span class="required">*</span></label>
+          <select id="gender" name="gender" class="form-control" required>
+            <option value="Male" {% if donor.gender == 'Male' %}selected{% endif %}>Male</option>
+            <option value="Female" {% if donor.gender == 'Female' %}selected{% endif %}>Female</option>
+            <option value="Other" {% if donor.gender == 'Other' %}selected{% endif %}>Other</option>
+          </select>
+        </div>
+
+        <!-- Phone -->
+        <div class="form-group">
+          <label class="form-label" for="phone">Phone Number <span class="required">*</span></label>
+          <input type="tel" id="phone" name="phone" class="form-control" placeholder="e.g. +1 555-019-2834" value="{{ donor.phone or '' }}" required>
+        </div>
+
+        <!-- Email -->
+        <div class="form-group">
+          <label class="form-label" for="email">Email Address</label>
+          <input type="email" id="email" name="email" class="form-control" placeholder="e.g. donor@example.com" value="{{ donor.email or '' }}">
+        </div>
+
+        <!-- Date of Birth -->
+        <div class="form-group">
+          <label class="form-label" for="dob">Date of Birth</label>
+          <input type="date" id="dob" name="dob" class="form-control" value="{{ donor.dob or '' }}">
+        </div>
+
+        <!-- Last Donation Date -->
+        <div class="form-group">
+          <label class="form-label" for="last_donation_date">Last Donation Date</label>
+          <input type="date" id="last_donation_date" name="last_donation_date" class="form-control" value="{{ donor.last_donation_date or '' }}">
+        </div>
+
+        <!-- Donor Type -->
+        <div class="form-group">
+          <label class="form-label" for="donor_type">Donor Type</label>
+          <select id="donor_type" name="donor_type" class="form-control">
+            <option value="Voluntary" {% if donor.donor_type == 'Voluntary' %}selected{% endif %}>Voluntary</option>
+            <option value="Replacement" {% if donor.donor_type == 'Replacement' %}selected{% endif %}>Replacement</option>
+            <option value="Autologous" {% if donor.donor_type == 'Autologous' %}selected{% endif %}>Autologous</option>
+            <option value="Directed" {% if donor.donor_type == 'Directed' %}selected{% endif %}>Directed</option>
+          </select>
+        </div>
+
+        <!-- Status -->
+        <div class="form-group">
+          <label class="form-label" for="status">Donor Status</label>
+          <select id="status" name="status" class="form-control">
+            <option value="Active" {% if donor.status == 'Active' %}selected{% endif %}>Active</option>
+            <option value="Inactive" {% if donor.status == 'Inactive' %}selected{% endif %}>Inactive</option>
+            <option value="Deferred" {% if donor.status == 'Deferred' %}selected{% endif %}>Deferred (Temporarily ineligible)</option>
+          </select>
+        </div>
+
+        <!-- Address -->
+        <div class="form-group full-width">
+          <label class="form-label" for="address">Residential Address</label>
+          <textarea id="address" name="address" class="form-control" rows="2" placeholder="Street, City, Postal Code">{{ donor.address or '' }}</textarea>
+        </div>
+
+        <!-- Remarks -->
+        <div class="form-group full-width">
+          <label class="form-label" for="remarks">Clinical / Medical Remarks</label>
+          <textarea id="remarks" name="remarks" class="form-control" rows="2" placeholder="Any medical notes or deferral reasons">{{ donor.remarks or '' }}</textarea>
+        </div>
+      </div>
+
+      <div style="margin-top: 24px; display: flex; gap: 12px; justify-content: flex-end;">
+        <a href="{{ url_for('donors') }}" class="btn btn-secondary">Cancel</a>
+        <button type="submit" class="btn btn-primary">{{ action }} Donor Record</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

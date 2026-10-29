@@ -1,0 +1,164 @@
+{% extends "base.html" %}
+
+{% block title %}Reports &amp; Analytics - HEMOCARE{% endblock %}
+{% block page_title %}Blood Bank Reports &amp; Analytics Center{% endblock %}
+
+{% block content %}
+<!-- Report Navigation Selector -->
+<div class="card-box" style="margin-bottom: 20px;">
+  <div class="card-header">
+    <div class="card-title">Select Operational Report</div>
+  </div>
+  <div class="card-body" style="padding: 14px 20px;">
+    <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+      {% for key, name in report_types.items() %}
+      <a href="{{ url_for('reports', type=key) }}" class="btn btn-sm {% if active_type == key %}btn-primary{% else %}btn-secondary{% endif %}">
+        {{ name }}
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<!-- Filters & Export Bar -->
+<form method="GET" action="{{ url_for('reports') }}" class="filter-bar">
+  <input type="hidden" name="type" value="{{ active_type }}">
+
+  <!-- Component filter (applicable to stock, inventory, issues, discards, hospital_issues) -->
+  {% if active_type in ['inventory', 'stock', 'issues', 'discards', 'hospital_issues'] %}
+  <div style="flex: 1; min-width: 140px;">
+    <select name="component" class="form-control">
+      <option value="">-- All Components --</option>
+      {% for comp in valid_components %}
+      <option value="{{ comp }}" {% if filters.component == comp %}selected{% endif %}>{{ comp }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  {% endif %}
+
+  <!-- Blood Group filter -->
+  {% if active_type in ['donors', 'donations', 'serology', 'inventory', 'stock', 'issues', 'discards', 'hospital_issues'] %}
+  <div style="flex: 1; min-width: 130px;">
+    <select name="blood_group" class="form-control">
+      <option value="">-- Blood Group --</option>
+      {% for bg in valid_blood_groups %}
+      <option value="{{ bg }}" {% if filters.blood_group == bg %}selected{% endif %}>{{ bg }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  {% endif %}
+
+  <!-- Date range filters -->
+  {% if active_type in ['donations', 'serology', 'issues', 'discards'] %}
+  <div style="flex: 1; min-width: 130px;">
+    <input type="date" name="date_from" class="form-control" placeholder="From Date" value="{{ filters.date_from }}">
+  </div>
+  <div style="flex: 1; min-width: 130px;">
+    <input type="date" name="date_to" class="form-control" placeholder="To Date" value="{{ filters.date_to }}">
+  </div>
+  {% endif %}
+
+  <!-- Hospital filter -->
+  {% if active_type in ['issues', 'hospital_issues'] %}
+  <div style="flex: 1; min-width: 160px;">
+    <select name="hospital_id" class="form-control">
+      <option value="">-- All Hospitals --</option>
+      {% for h in hospitals %}
+      <option value="{{ h.id }}" {% if filters.hospital_id|int == h.id %}selected{% endif %}>{{ h.name }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  {% endif %}
+
+  <!-- Status filter -->
+  {% if active_type in ['donors', 'inventory', 'serology'] %}
+  <div style="flex: 1; min-width: 130px;">
+    <select name="status" class="form-control">
+      <option value="">-- Status --</option>
+      {% if active_type == 'donors' %}
+      <option value="Active" {% if filters.status == 'Active' %}selected{% endif %}>Active</option>
+      <option value="Inactive" {% if filters.status == 'Inactive' %}selected{% endif %}>Inactive</option>
+      <option value="Deferred" {% if filters.status == 'Deferred' %}selected{% endif %}>Deferred</option>
+      {% elif active_type == 'serology' %}
+      <option value="Non-Reactive" {% if filters.status == 'Non-Reactive' %}selected{% endif %}>Non-Reactive</option>
+      <option value="Reactive" {% if filters.status == 'Reactive' %}selected{% endif %}>Reactive</option>
+      <option value="Pending" {% if filters.status == 'Pending' %}selected{% endif %}>Pending</option>
+      {% elif active_type == 'inventory' %}
+      <option value="Available" {% if filters.status == 'Available' %}selected{% endif %}>Available</option>
+      <option value="Issued" {% if filters.status == 'Issued' %}selected{% endif %}>Issued</option>
+      <option value="Discarded" {% if filters.status == 'Discarded' %}selected{% endif %}>Discarded</option>
+      <option value="Expired" {% if filters.status == 'Expired' %}selected{% endif %}>Expired</option>
+      {% endif %}
+    </select>
+  </div>
+  {% endif %}
+
+  <button type="submit" class="btn btn-secondary">Apply Filters</button>
+  <a href="{{ url_for('reports', type=active_type) }}" class="btn btn-secondary">Reset</a>
+
+  <!-- Export Buttons -->
+  <div style="margin-left: auto; display: flex; gap: 8px;">
+    <a href="{{ url_for('export_excel', type=active_type, component=filters.component, blood_group=filters.blood_group, date_from=filters.date_from, date_to=filters.date_to, hospital_id=filters.hospital_id, status=filters.status) }}" class="btn btn-success" style="background-color: #107c41; color: white;">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+      Export Excel (.xlsx)
+    </a>
+    <a href="{{ url_for('export_pdf', type=active_type, component=filters.component, blood_group=filters.blood_group, date_from=filters.date_from, date_to=filters.date_to, hospital_id=filters.hospital_id, status=filters.status) }}" class="btn btn-danger">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20 2H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-8.5 7.5c0 .83-.67 1.5-1.5 1.5H9v2H7.5V7H10c.83 0 1.5.67 1.5 1.5v1zm5 2c0 .83-.67 1.5-1.5 1.5h-2.5V7H15c.83 0 1.5.67 1.5 1.5v3zm4-3H19v1h1.5V11H19v2h-1.5V7h3v1.5z"/></svg>
+      Export PDF
+    </a>
+  </div>
+</form>
+
+<!-- Report Output Table -->
+<div class="card-box">
+  <div class="card-header">
+    <div class="card-title">{{ title }} ({{ rows|length }} records)</div>
+    <div style="font-size: 11.5px; color: var(--light-slate);">
+      Generated: {{ today_date }} &bull; 100% Offline Report
+    </div>
+  </div>
+  <div class="table-responsive">
+    <table class="data-table">
+      <thead>
+        <tr>
+          {% for h in headers %}
+          <th>{{ h }}</th>
+          {% endfor %}
+        </tr>
+      </thead>
+      <tbody>
+        {% for r in rows %}
+        <tr>
+          {% for val in r %}
+          <td>
+            {% if val in ['Available', 'Active', 'Non-Reactive', 'SAFE', 'ADEQUATE'] %}
+            <span class="badge badge-success">{{ val }}</span>
+            {% elif val in ['Reactive', 'Expired', 'Discarded', 'LOW STOCK', 'EXPIRED'] %}
+            <span class="badge badge-danger">{{ val }}</span>
+            {% elif val in ['Pending', 'EXPIRING SOON'] %}
+            <span class="badge badge-warning">{{ val }}</span>
+            {% elif val in ['Issued'] %}
+            <span class="badge badge-info">{{ val }}</span>
+            {% elif val in valid_blood_groups %}
+            <span class="badge badge-blood">{{ val }}</span>
+            {% else %}
+            {{ val }}
+            {% endif %}
+          </td>
+          {% endfor %}
+        </tr>
+        {% else %}
+        <tr>
+          <td colspan="{{ headers|length }}">
+            <div class="empty-state">
+              <div class="empty-state-title">No matching records found</div>
+              <p>There are no entries matching the current filter parameters.</p>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

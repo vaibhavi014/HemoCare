@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block title %}Discard Blood Unit - HEMOCARE{% endblock %}
+{% block page_title %}Log Blood / Component Unit Discard{% endblock %}
+
+{% block content %}
+<div class="card-box" style="max-width: 860px; margin: 0 auto;">
+  <div class="card-header">
+    <div class="card-title">Biohazard Discard &amp; Wastage Entry</div>
+    <a href="{{ url_for('discards') }}" class="btn btn-sm btn-secondary">&larr; Back to Discard Register</a>
+  </div>
+
+  <div class="card-body">
+    <form method="POST" action="{{ url_for('discard_new') }}">
+      <div class="form-grid">
+        <!-- Unit Selection -->
+        <div class="form-group full-width">
+          <label class="form-label" for="select_unit_id">Select Blood Unit to Discard <span class="required">*</span></label>
+          <select id="select_unit_id" name="unit_id" class="form-control" required>
+            <option value="">-- Choose Unit from Inventory --</option>
+            {% for u in units %}
+            <option value="{{ u.id }}" {% if request.args.get('unit_id')|int == u.id %}selected{% endif %}>
+              {{ u.unit_code }} &mdash; {{ u.blood_group }} {{ u.component_type }} (Status: {{ u.status }}, Serology: {{ u.serology_status }}, Exp: {{ u.expiry_date }})
+            </option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <!-- Auto-filled Blood Group -->
+        <div class="form-group">
+          <label class="form-label">Blood Group (Auto-fetched)</label>
+          <input type="text" id="unit_bg_display" class="form-control" readonly placeholder="Auto-populated" style="background-color: #f8fafc; font-weight: bold; color: var(--primary-red);">
+        </div>
+
+        <!-- Auto-filled Component Type -->
+        <div class="form-group">
+          <label class="form-label">Component Type (Auto-fetched)</label>
+          <input type="text" id="unit_comp_display" class="form-control" readonly placeholder="Auto-populated" style="background-color: #f8fafc; font-weight: bold;">
+        </div>
+
+        <!-- Discard Date -->
+        <div class="form-group">
+          <label class="form-label" for="discard_date">Discard Date <span class="required">*</span></label>
+          <input type="date" id="discard_date" name="discard_date" class="form-control" value="{{ today }}" required>
+        </div>
+
+        <!-- Discard Reason -->
+        <div class="form-group">
+          <label class="form-label" for="reason">Discard / Condemnation Reason <span class="required">*</span></label>
+          <select id="reason" name="reason" class="form-control" required>
+            <option value="Expired">Expired (Exceeded shelf life)</option>
+            <option value="Reactive Serology">Reactive Serology (Infection detected)</option>
+            <option value="Damaged Bag">Damaged Bag / Punctured</option>
+            <option value="Leakage">Port / Tubing Leakage</option>
+            <option value="Storage Issue">Cold Chain Break / Storage Issue</option>
+            <option value="Other">Other / Hemolyzed / Clotted</option>
+          </select>
+        </div>
+
+        <!-- Authorized By -->
+        <div class="form-group">
+          <label class="form-label" for="authorized_by">Authorized By (Medical Officer / Supervisor) <span class="required">*</span></label>
+          <input type="text" id="authorized_by" name="authorized_by" class="form-control" value="{{ current_full_name or 'Medical Officer' }}" required>
+        </div>
+
+        <!-- Remarks -->
+        <div class="form-group full-width">
+          <label class="form-label" for="remarks">Disposal Protocol &amp; Incineration Remarks</label>
+          <textarea id="remarks" name="remarks" class="form-control" rows="2" placeholder="Autoclaved, color-coded yellow biohazard disposal bag details"></textarea>
+        </div>
+      </div>
+
+      <div style="margin-top: 24px; display: flex; gap: 12px; justify-content: flex-end;">
+        <a href="{{ url_for('discards') }}" class="btn btn-secondary">Cancel</a>
+        <button type="submit" class="btn btn-danger" onclick="return confirm('Confirm discarding this blood unit? This will permanently update inventory status to Discarded.');">
+          Confirm Discard Unit
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

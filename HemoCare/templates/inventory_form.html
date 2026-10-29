@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+
+{% block title %}Add Unit to Inventory - HEMOCARE{% endblock %}
+{% block page_title %}Register Component Unit in Inventory{% endblock %}
+
+{% block content %}
+<div class="card-box" style="max-width: 860px; margin: 0 auto;">
+  <div class="card-header">
+    <div class="card-title">Blood Component Unit Registration</div>
+    <a href="{{ url_for('inventory') }}" class="btn btn-sm btn-secondary">&larr; Back to Inventory</a>
+  </div>
+
+  <div class="card-body">
+    <form method="POST" action="{{ url_for('inventory_add') }}">
+      <div class="form-grid">
+        <!-- Component Type Selection -->
+        <div class="form-group">
+          <label class="form-label" for="component_type">Component Type <span class="required">*</span></label>
+          <select id="component_type" name="component_type" class="form-control" required>
+            <option value="Whole Blood" selected>Whole Blood (Shelf Life: 35 days)</option>
+            <option value="PRBC">PRBC - Packed Red Blood Cells (Shelf Life: 42 days)</option>
+            <option value="FFP">FFP - Fresh Frozen Plasma (Shelf Life: 365 days)</option>
+            <option value="Platelets">Platelets (Shelf Life: 5 days)</option>
+          </select>
+          <span class="form-help">Only approved blood components can be stored in inventory.</span>
+        </div>
+
+        <!-- Blood Group -->
+        <div class="form-group">
+          <label class="form-label" for="blood_group">ABO/Rh Blood Group <span class="required">*</span></label>
+          <select id="blood_group" name="blood_group" class="form-control" required>
+            <option value="">-- Select Blood Group --</option>
+            {% for bg in valid_blood_groups %}
+            <option value="{{ bg }}">{{ bg }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <!-- Linked Donation (Optional) -->
+        <div class="form-group full-width">
+          <label class="form-label" for="donation_id">Source Donation (Optional linkage)</label>
+          <select id="donation_id" name="donation_id" class="form-control">
+            <option value="">-- Unlinked / Direct Entry --</option>
+            {% for don in donations %}
+            <option value="{{ don.id }}">{{ don.donation_code }} - Donor: {{ don.donor_name }} ({{ don.blood_group }}) | {{ don.donation_date }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <!-- Collection Date -->
+        <div class="form-group">
+          <label class="form-label" for="collection_date">Collection Date <span class="required">*</span></label>
+          <input type="date" id="collection_date" name="collection_date" class="form-control" value="{{ today }}" required>
+        </div>
+
+        <!-- Expiry Date -->
+        <div class="form-group">
+          <label class="form-label" for="expiry_date">Expiry Date</label>
+          <input type="date" id="expiry_date" name="expiry_date" class="form-control">
+          <span class="form-help">Leave empty to calculate automatically based on component shelf life.</span>
+        </div>
+
+        <!-- Volume (mL) -->
+        <div class="form-group">
+          <label class="form-label" for="volume_ml">Unit Volume (mL) <span class="required">*</span></label>
+          <input type="number" id="volume_ml" name="volume_ml" class="form-control" value="450" required>
+        </div>
+
+        <!-- Storage Location -->
+        <div class="form-group">
+          <label class="form-label" for="storage_location">Cold Chain Storage Location <span class="required">*</span></label>
+          <input type="text" id="storage_location" name="storage_location" class="form-control" value="Blood Bank Refrigerator 1 (Shelf A)" required>
+        </div>
+
+        <!-- Initial Status -->
+        <div class="form-group">
+          <label class="form-label" for="status">Initial Status</label>
+          <select id="status" name="status" class="form-control">
+            <option value="Available" selected>Available (Awaiting Issue)</option>
+            <option value="Reserved">Reserved</option>
+            <option value="Quarantined">Quarantined</option>
+          </select>
+        </div>
+
+        <!-- Serology Status -->
+        <div class="form-group">
+          <label class="form-label" for="serology_status">Serology Status</label>
+          <select id="serology_status" name="serology_status" class="form-control">
+            <option value="Non-Reactive">Non-Reactive (Safe for Issue)</option>
+            <option value="Pending" selected>Pending</option>
+            <option value="Reactive">Reactive (Ineligible)</option>
+          </select>
+        </div>
+
+        <!-- Remarks -->
+        <div class="form-group full-width">
+          <label class="form-label" for="remarks">Inventory Remarks</label>
+          <textarea id="remarks" name="remarks" class="form-control" rows="2" placeholder="Quality check observations, storage compartment notes"></textarea>
+        </div>
+      </div>
+
+      <div style="margin-top: 24px; display: flex; gap: 12px; justify-content: flex-end;">
+        <a href="{{ url_for('inventory') }}" class="btn btn-secondary">Cancel</a>
+        <button type="submit" class="btn btn-primary">Save to Inventory</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

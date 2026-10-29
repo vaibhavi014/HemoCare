@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+
+{% block title %}Record Donation - HEMOCARE{% endblock %}
+{% block page_title %}Record New Blood Donation{% endblock %}
+
+{% block content %}
+<div class="card-box" style="max-width: 860px; margin: 0 auto;">
+  <div class="card-header">
+    <div class="card-title">Blood Donation Collection Form</div>
+    <a href="{{ url_for('donations') }}" class="btn btn-sm btn-secondary">&larr; Back to Register</a>
+  </div>
+
+  <div class="card-body">
+    <form method="POST" action="{{ url_for('donation_add') }}">
+      <div class="form-grid">
+        <!-- Donor Selection -->
+        <div class="form-group full-width">
+          <label class="form-label" for="select_donor_id">Select Registered Donor <span class="required">*</span></label>
+          <select id="select_donor_id" name="donor_id" class="form-control" required>
+            <option value="">-- Choose Donor from Master --</option>
+            {% for d in donors %}
+            <option value="{{ d.id }}">{{ d.donor_code }} - {{ d.name }} ({{ d.blood_group }}, {{ d.age }}y, {{ d.gender }})</option>
+            {% endfor %}
+          </select>
+          <span class="form-help">Selecting a donor automatically populates verified donor details below.</span>
+        </div>
+
+        <!-- Auto-filled Donor Name -->
+        <div class="form-group">
+          <label class="form-label">Donor Name (Auto-fetched)</label>
+          <input type="text" id="donor_name_display" class="form-control" readonly placeholder="Auto-populated upon donor selection" style="background-color: #f8fafc;">
+        </div>
+
+        <!-- Auto-filled Blood Group -->
+        <div class="form-group">
+          <label class="form-label">Blood Group (Auto-fetched)</label>
+          <input type="text" id="blood_group_display" class="form-control" readonly placeholder="Auto-populated" style="background-color: #f8fafc; font-weight: bold; color: var(--primary-red);">
+        </div>
+
+        <!-- Auto-filled Age / Gender -->
+        <div class="form-group">
+          <label class="form-label">Age &amp; Gender (Auto-fetched)</label>
+          <input type="text" id="donor_age_display" class="form-control" readonly placeholder="Auto-populated" style="background-color: #f8fafc;">
+        </div>
+
+        <!-- Donation Date -->
+        <div class="form-group">
+          <label class="form-label" for="donation_date">Donation Date <span class="required">*</span></label>
+          <input type="date" id="donation_date" name="donation_date" class="form-control" value="{{ today }}" required>
+        </div>
+
+        <!-- Donation Type -->
+        <div class="form-group">
+          <label class="form-label" for="donation_type">Donation Type <span class="required">*</span></label>
+          <select id="donation_type" name="donation_type" class="form-control" required>
+            <option value="Voluntary">Voluntary Non-Remunerated</option>
+            <option value="Replacement">Family / Replacement</option>
+            <option value="Autologous">Autologous (Self-Use)</option>
+            <option value="Directed">Directed</option>
+          </select>
+        </div>
+
+        <!-- Volume (mL) -->
+        <div class="form-group">
+          <label class="form-label" for="volume_ml">Volume Collected (mL) <span class="required">*</span></label>
+          <select id="volume_ml" name="volume_ml" class="form-control" required>
+            <option value="450" selected>450 mL (Standard Whole Blood Bag)</option>
+            <option value="350">350 mL (Low Volume Bag)</option>
+            <option value="500">500 mL (Apheresis)</option>
+          </select>
+        </div>
+
+        <!-- Collection Bag Number -->
+        <div class="form-group">
+          <label class="form-label" for="bag_number">Collection Bag / Unit Barcode Number</label>
+          <input type="text" id="bag_number" name="bag_number" class="form-control" placeholder="Leave blank to auto-generate (e.g. BAG-DON0001)">
+        </div>
+
+        <!-- Initial Component Inventory Generation -->
+        <div class="form-group full-width" style="background: #f8fafc; padding: 14px; border: 1px solid var(--border-color); border-radius: var(--radius-sm);">
+          <label class="form-label" for="component_to_create">
+            <strong>Register Initial Unit in Component Inventory:</strong>
+          </label>
+          <select id="component_to_create" name="component_to_create" class="form-control" style="max-width: 360px;">
+            <option value="Whole Blood" selected>Whole Blood (Default)</option>
+            <option value="PRBC">PRBC (Packed Red Blood Cells)</option>
+            <option value="FFP">FFP (Fresh Frozen Plasma)</option>
+            <option value="Platelets">Platelets</option>
+          </select>
+          <span class="form-help" style="margin-top: 6px; display: block;">
+            The initial inventory unit will be set to <strong>Pending Serology</strong>. It will strictly not be issueable until serology tests are verified Non-Reactive.
+          </span>
+        </div>
+
+        <!-- Storage Location -->
+        <div class="form-group">
+          <label class="form-label" for="storage_location">Assigned Storage Location</label>
+          <input type="text" id="storage_location" name="storage_location" class="form-control" value="Quarantine Refrigerator 1" placeholder="e.g. Quarantine Fridge 1">
+        </div>
+
+        <!-- Remarks -->
+        <div class="form-group full-width">
+          <label class="form-label" for="remarks">Collection Remarks</label>
+          <textarea id="remarks" name="remarks" class="form-control" rows="2" placeholder="Donor vitals (BP, Hb, pulse), phlebotomist notes, adverse reactions if any"></textarea>
+        </div>
+      </div>
+
+      <div style="margin-top: 24px; display: flex; gap: 12px; justify-content: flex-end;">
+        <a href="{{ url_for('donations') }}" class="btn btn-secondary">Cancel</a>
+        <button type="submit" class="btn btn-primary">Save Donation &amp; Register Unit</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
