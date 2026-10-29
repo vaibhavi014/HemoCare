@@ -1,0 +1,230 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard{% endblock %}
+{% block page_title %}Dashboard & Operational Overview{% endblock %}
+
+{% block content %}
+<!-- Top 11 Metrics Cards -->
+<div class="stat-grid-top">
+  <!-- Total Donors -->
+  <div class="stat-card">
+    <div class="stat-label">Total Donors</div>
+    <div class="stat-val-row">
+      <span class="stat-value">{{ metrics.total_donors }}</span>
+      <span class="badge badge-blood">Registered</span>
+    </div>
+    <div class="stat-subtext"><a href="{{ url_for('donors') }}" style="color: inherit; text-decoration: none;">View Donor Master &rarr;</a></div>
+  </div>
+
+  <!-- Total Donations -->
+  <div class="stat-card">
+    <div class="stat-label">Total Donations</div>
+    <div class="stat-val-row">
+      <span class="stat-value">{{ metrics.total_donations }}</span>
+      <span class="badge badge-info">Collections</span>
+    </div>
+    <div class="stat-subtext"><a href="{{ url_for('donations') }}" style="color: inherit; text-decoration: none;">View Register &rarr;</a></div>
+  </div>
+
+  <!-- Available Units -->
+  <div class="stat-card accent-card">
+    <div class="stat-label">Available Units</div>
+    <div class="stat-val-row">
+      <span class="stat-value" style="color: var(--primary-red);">{{ metrics.available_units }}</span>
+      <span class="badge badge-success">Issueable</span>
+    </div>
+    <div class="stat-subtext">Screened Non-Reactive &amp; Valid</div>
+  </div>
+
+  <!-- Whole Blood -->
+  <div class="stat-card">
+    <div class="stat-label">Whole Blood</div>
+    <div class="stat-val-row">
+      <span class="stat-value">{{ metrics.whole_blood }}</span>
+      <span class="badge badge-blood">WB</span>
+    </div>
+    <div class="stat-subtext">Shelf Life: 35 days</div>
+  </div>
+
+  <!-- PRBC -->
+  <div class="stat-card">
+    <div class="stat-label">PRBC</div>
+    <div class="stat-val-row">
+      <span class="stat-value">{{ metrics.prbc }}</span>
+      <span class="badge badge-blood">Packed RBC</span>
+    </div>
+    <div class="stat-subtext">Shelf Life: 42 days</div>
+  </div>
+
+  <!-- FFP -->
+  <div class="stat-card">
+    <div class="stat-label">FFP</div>
+    <div class="stat-val-row">
+      <span class="stat-value">{{ metrics.ffp }}</span>
+      <span class="badge badge-info">Plasma</span>
+    </div>
+    <div class="stat-subtext">Shelf Life: 365 days</div>
+  </div>
+
+  <!-- Platelets -->
+  <div class="stat-card">
+    <div class="stat-label">Platelets</div>
+    <div class="stat-val-row">
+      <span class="stat-value">{{ metrics.platelets }}</span>
+      <span class="badge badge-warning">RDP</span>
+    </div>
+    <div class="stat-subtext">Shelf Life: 5 days</div>
+  </div>
+
+  <!-- Units Issued -->
+  <div class="stat-card">
+    <div class="stat-label">Units Issued</div>
+    <div class="stat-val-row">
+      <span class="stat-value">{{ metrics.units_issued }}</span>
+      <span class="badge badge-info">Transfused</span>
+    </div>
+    <div class="stat-subtext"><a href="{{ url_for('issues') }}" style="color: inherit; text-decoration: none;">View Issue Log &rarr;</a></div>
+  </div>
+
+  <!-- Units Discarded -->
+  <div class="stat-card">
+    <div class="stat-label">Units Discarded</div>
+    <div class="stat-val-row">
+      <span class="stat-value">{{ metrics.units_discarded }}</span>
+      <span class="badge badge-danger">Wastage</span>
+    </div>
+    <div class="stat-subtext"><a href="{{ url_for('discards') }}" style="color: inherit; text-decoration: none;">View Discards &rarr;</a></div>
+  </div>
+
+  <!-- Low Stock Items -->
+  <div class="stat-card {% if metrics.low_stock_count > 0 %}alert-card{% endif %}">
+    <div class="stat-label">Low Stock Alerts</div>
+    <div class="stat-val-row">
+      <span class="stat-value" {% if metrics.low_stock_count > 0 %}style="color: var(--danger-color);"{% endif %}>
+        {{ metrics.low_stock_count }}
+      </span>
+      {% if metrics.low_stock_count > 0 %}
+      <span class="badge badge-danger">CRITICAL</span>
+      {% else %}
+      <span class="badge badge-success">HEALTHY</span>
+      {% endif %}
+    </div>
+    <div class="stat-subtext"><a href="{{ url_for('stock') }}" style="color: inherit; text-decoration: none;">Review stock limits &rarr;</a></div>
+  </div>
+
+  <!-- Expiring Soon -->
+  <div class="stat-card {% if metrics.expiring_soon_count > 0 %}warning-card{% endif %}">
+    <div class="stat-label">Expiring Soon</div>
+    <div class="stat-val-row">
+      <span class="stat-value" {% if metrics.expiring_soon_count > 0 %}style="color: var(--warning-color);"{% endif %}>
+        {{ metrics.expiring_soon_count }}
+      </span>
+      {% if metrics.expiring_soon_count > 0 %}
+      <span class="badge badge-warning">NEXT 7 DAYS</span>
+      {% else %}
+      <span class="badge badge-safe">SAFE</span>
+      {% endif %}
+    </div>
+    <div class="stat-subtext"><a href="{{ url_for('inventory', expiring_days=7) }}" style="color: inherit; text-decoration: none;">Inspect aging units &rarr;</a></div>
+  </div>
+</div>
+
+<!-- Low Stock & Expiry Notices (if any) -->
+{% if metrics.low_stock_items %}
+<div class="card-box" style="border-left: 4px solid var(--danger-color); margin-bottom: 24px;">
+  <div class="card-header" style="background-color: #fef2f2;">
+    <div class="card-title" style="color: var(--danger-color); display: flex; align-items: center; gap: 8px;">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L1 21h22L12 2zm0 3.99L19.53 19H4.47L12 5.99zM11 16h2v2h-2zm0-6h2v4h-2z"/></svg>
+      Critical Stock Shortage Warning
+    </div>
+    <a href="{{ url_for('stock') }}" class="btn btn-sm btn-secondary">Manage Stock Settings</a>
+  </div>
+  <div class="card-body" style="padding: 0;">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Component</th>
+          <th>Available Units</th>
+          <th>Configured Threshold</th>
+          <th>Shortfall</th>
+          <th>Status</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in metrics.low_stock_items %}
+        <tr>
+          <td><strong>{{ item.component }}</strong></td>
+          <td style="color: var(--danger-color); font-weight: bold;">{{ item.current }} units</td>
+          <td>{{ item.min }} units</td>
+          <td>-{{ item.shortfall }} units</td>
+          <td><span class="badge badge-danger">LOW STOCK</span></td>
+          <td><a href="{{ url_for('donation_add') }}" class="btn btn-sm btn-primary">Collect {{ item.component }}</a></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+
+<!-- Offline Charts Grid -->
+<div class="chart-grid">
+  <!-- Chart 1: Blood & Component Stock -->
+  <div class="card-box">
+    <div class="card-header">
+      <div class="card-title">1. Available Component Stock</div>
+      <span class="badge badge-blood">Real-time</span>
+    </div>
+    <div class="card-body">
+      <div class="chart-container">
+        <canvas id="chart_stock" width="460" height="240"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Chart 4: Component Distribution -->
+  <div class="card-box">
+    <div class="card-header">
+      <div class="card-title">2. Component Distribution</div>
+      <span class="badge badge-info">Inventory Share</span>
+    </div>
+    <div class="card-body">
+      <div class="chart-container">
+        <canvas id="chart_distribution" width="460" height="240"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Chart 2: Monthly Donations -->
+  <div class="card-box">
+    <div class="card-header">
+      <div class="card-title">3. Monthly Donations Trend (6 Months)</div>
+      <span class="badge badge-blood">Collections</span>
+    </div>
+    <div class="card-body">
+      <div class="chart-container">
+        <canvas id="chart_donations" width="460" height="240"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Chart 3: Monthly Issues -->
+  <div class="card-box">
+    <div class="card-header">
+      <div class="card-title">4. Monthly Blood &amp; Component Issues</div>
+      <span class="badge badge-info">Hospital Issuances</span>
+    </div>
+    <div class="card-body">
+      <div class="chart-container">
+        <canvas id="chart_issues" width="460" height="240"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Embed data locally for immediate offline rendering
+  window.HEMOCARE_CHART_DATA = {{ chart_data|tojson }};
+</script>
+{% endblock %}
