@@ -19,7 +19,16 @@ import models
 import report_generator
 
 app = Flask(__name__)
-app.secret_key = os.environ.get("SECRET_KEY", "hemocare-offline-secret-key-safe-blood-2026")
+secret_key = os.environ.get("SECRET_KEY")
+if not secret_key:
+    raise RuntimeError("SECRET_KEY environment variable is not configured")
+app.secret_key = secret_key
+
+app.config.update(
+    SESSION_COOKIE_SECURE=True,
+    SESSION_COOKIE_HTTPONLY=True,
+    SESSION_COOKIE_SAMESITE="Lax",
+)
 app.config["TEMPLATES_AUTO_RELOAD"] = True
 
 # ==========================================

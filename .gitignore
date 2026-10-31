@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.py[cod]
+
+# Virtual environments
+venv/
+.venv/
+
+# Databases - never commit database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Secrets and environment files
+.env
+.env.*
+!.env.example
+
+# Logs and temporary backups
+*.log
+*.before-*
+*.bak
