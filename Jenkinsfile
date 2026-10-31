@@ -1,4 +1,5 @@
 
+
 pipeline {
     agent any
 
@@ -8,6 +9,7 @@ pipeline {
     }
 
     stages {
+
         stage('Check Python') {
             steps {
                 bat '''
@@ -35,7 +37,7 @@ pipeline {
             }
         }
 
-                stage('Run Tests') {
+        stage('Run Tests') {
             steps {
                 dir('HemoCare') {
                     withEnv([
@@ -49,11 +51,51 @@ pipeline {
                 }
             }
         }
- }
+
+        stage('Deploy to Stage') {
+            steps {
+                withCredentials([
+                    sshUserPrivateKey(
+                        credentialsId: 'hemocare-stage-ssh',
+                        keyFileVariable: 'SSH_KEY',
+                        usernameVariable: 'SSH_USER'
+                    )
+                ]) {
+                    bat '''
+                    echo Checking SSH and SCP availability...
+                    where ssh
+                    where scp
+
+                    echo Transferring Stage deployment script...
+
+                    scp -i "%SSH_KEY%" -o StrictHostKeyChecking=accept-new -o BatchMode=yes scripts/deploy-stage.sh "%SSH_USER%@54.252.222.146:/tmp/hemocare-deploy-stage.sh"
+
+                    if errorlevel 1 exit /b 1
+
+                    echo Executing Stage deployment...
+
+                    ssh -i "%SSH_KEY%" -o StrictHostKeyChecking=accept-new -o BatchMode=yes "%SSH_USER%@54.252.222.146" "chmod 700 /tmp/hemocare-deploy-stage.sh && sed -i 's/\\r$//' /tmp/hemocare-deploy-stage.sh && bash /tmp/hemocare-deploy-stage.sh"
+
+                    if errorlevel 1 exit /b 1
+
+                    echo Stage deployment completed.
+                    '''
+                }
+            }
+        }
+    }
 
     post {
+        success {
+            echo 'HemoCare CI and Stage deployment completed successfully.'
+        }
+
+        failure {
+            echo 'HemoCare pipeline failed. Check the stage logs.'
+        }
+
         always {
-            echo 'HemoCare CI pipeline execution completed.'
+            echo 'HemoCare pipeline execution completed.'
         }
     }
 }
