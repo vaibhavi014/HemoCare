@@ -31,8 +31,6 @@ pipeline {
             steps {
                 dir('HemoCare') {
                     bat '''
-icacls "%SSH_KEY%" /inheritance:r
-icacls "%SSH_KEY%" /grant:r SYSTEM:F
                     "%WORKSPACE%\\.venv\\Scripts\\python.exe" -m pip install -r requirements-ci.txt
                     '''
                 }
@@ -64,6 +62,15 @@ icacls "%SSH_KEY%" /grant:r SYSTEM:F
                     )
                 ]) {
                     bat '''
+                    echo Fixing SSH private key permissions...
+
+icacls "%SSH_KEY%" /inheritance:r
+if errorlevel 1 exit /b 1
+
+icacls "%SSH_KEY%" /grant:r SYSTEM:F
+if errorlevel 1 exit /b 1
+
+icacls "%SSH_KEY%"
                     echo Checking SSH and SCP availability...
                     where ssh
                     where scp
