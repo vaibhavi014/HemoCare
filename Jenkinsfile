@@ -31,6 +31,8 @@ pipeline {
             steps {
                 dir('HemoCare') {
                     bat '''
+icacls "%SSH_KEY%" /inheritance:r
+icacls "%SSH_KEY%" /grant:r SYSTEM:F
                     "%WORKSPACE%\\.venv\\Scripts\\python.exe" -m pip install -r requirements-ci.txt
                     '''
                 }
