@@ -15,6 +15,7 @@ class HemoCareTestCase(unittest.TestCase):
     def setUpClass(cls):
         app.config["TESTING"] = True
         app.config["WTF_CSRF_ENABLED"] = False
+        app.config["SESSION_COOKIE_SECURE"] = False
         seed_database()
 
     def setUp(self):
