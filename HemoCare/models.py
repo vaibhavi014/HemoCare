@@ -196,8 +196,8 @@ def create_donation(data):
     cursor.execute("""
         INSERT INTO donations (
             donation_code, donor_id, donor_code, donor_name, blood_group,
-            donation_date, donation_type, volume_ml, bag_number, status, remarks, created_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            donation_date, donation_type, volume_ml, bag_number, status, remarks, created_at, hemoglobin
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """, (
         donation_code,
         donor["id"],
@@ -210,7 +210,8 @@ def create_donation(data):
         bag_num,
         data.get("status", "Collected"),
         data.get("remarks", "").strip() or None,
-        now_str
+        now_str,
+        float(data["hemoglobin"]) if data.get("hemoglobin") else None
     ))
     donation_id = cursor.lastrowid
 
