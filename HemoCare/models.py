@@ -559,8 +559,8 @@ def issue_unit(data):
     if not hospital:
         raise ValueError("Specified Hospital does not exist.")
 
-    if not data.get("patient_name"):
-        raise ValueError("Patient Name is required for issuing blood.")
+    if not (data.get("reason") or "").strip():
+        raise ValueError("Indication / Clinical Transfusion Reason is required.")
 
     if not data.get("issued_by"):
         raise ValueError("Issued By (staff name) is required.")
@@ -596,7 +596,7 @@ def issue_unit(data):
         unit["blood_group"],
         unit["component_type"],
         1,
-        data["patient_name"].strip(),
+        (data.get("patient_name") or "").strip(),
         data.get("patient_id", "").strip() or None,
         data.get("doctor_dept", "").strip() or None,
         data.get("reason", "").strip() or None,
