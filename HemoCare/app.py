@@ -31,6 +31,14 @@ app.config.update(
 )
 app.config["TEMPLATES_AUTO_RELOAD"] = True
 
+@app.after_request
+def add_security_headers(response):
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    response.headers["Permissions-Policy"] = "geolocation=(), microphone=(), camera=()"
+    return response
+
 # ==========================================
 # AUTHENTICATION & SESSION MANAGEMENT
 # ==========================================
@@ -59,6 +67,8 @@ def inject_global_data():
             "today_date": date.today().isoformat()
         }
     return {
+        "low_stock_count": 0,
+        "expiring_soon_count": 0,
         "valid_components": VALID_COMPONENTS,
         "valid_blood_groups": VALID_BLOOD_GROUPS,
         "today_date": date.today().isoformat()
