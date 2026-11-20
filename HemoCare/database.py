@@ -241,6 +241,12 @@ def init_db():
         );
     """)
 
+    # Backward-compatible Hemoglobin migration for donations
+    cursor.execute("PRAGMA table_info(donations)")
+    donation_columns = [row[1] for row in cursor.fetchall()]
+    if "hemoglobin" not in donation_columns:
+        cursor.execute("ALTER TABLE donations ADD COLUMN hemoglobin REAL")
+
     # Seed default admin user if not exists
     cursor.execute("SELECT id FROM users WHERE username = ?", ("admin",))
     if not cursor.fetchone():
