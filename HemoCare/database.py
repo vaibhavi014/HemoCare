@@ -202,6 +202,45 @@ def init_db():
         );
     """)
 
+    # Camp management table
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS camps (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            camp_code TEXT UNIQUE NOT NULL,
+            camp_name TEXT NOT NULL,
+            camp_date TEXT NOT NULL,
+            location TEXT NOT NULL,
+            organizer TEXT,
+            contact_person TEXT,
+            contact_number TEXT,
+            expected_donors INTEGER DEFAULT 0,
+            actual_donors INTEGER DEFAULT 0,
+            remarks TEXT,
+            created_at TEXT NOT NULL
+        );
+    """)
+
+    # Kit and reagent stock table
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS kit_reagents (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            item_code TEXT UNIQUE NOT NULL,
+            item_name TEXT NOT NULL,
+            category TEXT NOT NULL,
+            manufacturer TEXT,
+            batch_number TEXT,
+            quantity_received REAL NOT NULL DEFAULT 0,
+            quantity_available REAL NOT NULL DEFAULT 0,
+            unit TEXT NOT NULL,
+            received_date TEXT NOT NULL,
+            expiry_date TEXT,
+            supplier TEXT,
+            minimum_stock_level REAL NOT NULL DEFAULT 0,
+            remarks TEXT,
+            created_at TEXT NOT NULL
+        );
+    """)
+
     # Seed default admin user if not exists
     cursor.execute("SELECT id FROM users WHERE username = ?", ("admin",))
     if not cursor.fetchone():

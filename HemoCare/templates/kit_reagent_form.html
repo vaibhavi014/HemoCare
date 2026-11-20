@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="mb-4">
+        <h2>{{ 'Edit' if item else 'Add' }} Kit / Reagent</h2>
+        <p class="text-muted">Enter the stock item details below.</p>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <form method="POST">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Item Name <span class="text-danger">*</span></label>
+                        <input type="text" name="item_name" class="form-control"
+                               value="{{ item.get('item_name', '') }}" required>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">Category <span class="text-danger">*</span></label>
+                        <input type="text" name="category" class="form-control"
+                               value="{{ item.get('category', '') }}"
+                               placeholder="e.g. Diagnostic Kit, Reagent, Consumable" required>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">Manufacturer</label>
+                        <input type="text" name="manufacturer" class="form-control"
+                               value="{{ item.get('manufacturer', '') }}">
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">Batch / Lot Number</label>
+                        <input type="text" name="batch_number" class="form-control"
+                               value="{{ item.get('batch_number', '') }}">
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label">Quantity Received <span class="text-danger">*</span></label>
+                        <input type="number" name="quantity_received" class="form-control"
+                               min="0" step="0.01"
+                               value="{{ item.get('quantity_received', '') }}" required>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label">Quantity Available <span class="text-danger">*</span></label>
+                        <input type="number" name="quantity_available" class="form-control"
+                               min="0" step="0.01"
+                               value="{{ item.get('quantity_available', '') }}" required>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label">Unit of Measurement <span class="text-danger">*</span></label>
+                        <input type="text" name="unit" class="form-control"
+                               value="{{ item.get('unit', '') }}"
+                               placeholder="e.g. kits, bottles, tests" required>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label">Received Date <span class="text-danger">*</span></label>
+                        <input type="date" name="received_date" class="form-control"
+                               value="{{ item.get('received_date', '') }}" required>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label">Expiry Date</label>
+                        <input type="date" name="expiry_date" class="form-control"
+                               value="{{ item.get('expiry_date', '') }}">
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label">Minimum Stock Level <span class="text-danger">*</span></label>
+                        <input type="number" name="minimum_stock_level" class="form-control"
+                               min="0" step="0.01"
+                               value="{{ item.get('minimum_stock_level', 0) }}" required>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">Supplier</label>
+                        <input type="text" name="supplier" class="form-control"
+                               value="{{ item.get('supplier', '') }}">
+                    </div>
+
+                    <div class="col-md-12">
+                        <label class="form-label">Remarks</label>
+                        <textarea name="remarks" class="form-control" rows="3">{{ item.get('remarks', '') }}</textarea>
+                    </div>
+                </div>
+
+                <div class="mt-4">
+                    <button type="submit" class="btn btn-primary">
+                        {{ 'Update Item' if item else 'Save Item' }}
+                    </button>
+                    <a href="{{ url_for('kit_reagents') }}" class="btn btn-outline-secondary">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
