@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block title %}Camp Records{% endblock %}
+{% block page_title %}Blood Donation Camp Records{% endblock %}
+
+{% block content %}
+
+<form method="GET" action="{{ url_for('camps') }}" class="filter-bar">
+  <div style="flex: 2; min-width: 220px;">
+    <input type="text" name="search" class="form-control"
+           placeholder="Search by Camp ID, Name, Location, Organizer..."
+           value="{{ search }}">
+  </div>
+
+  <button type="submit" class="btn btn-secondary">Search</button>
+  <a href="{{ url_for('camps') }}" class="btn btn-secondary">Reset</a>
+  <a href="{{ url_for('camp_add') }}" class="btn btn-primary" style="margin-left: auto;">
+    + Register Camp
+  </a>
+</form>
+
+<div class="card-box">
+  <div class="card-header">
+    <div class="card-title">Registered Donation Camps ({{ camps|length }})</div>
+  </div>
+
+  <div class="table-responsive">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Camp ID</th>
+          <th>Camp Name</th>
+          <th>Camp Date</th>
+          <th>Location</th>
+          <th>Organizer</th>
+          <th>Expected Donors</th>
+          <th>Actual Donors</th>
+          <th style="text-align: right;">Actions</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        {% for c in camps %}
+        <tr>
+          <td><strong style="color: var(--primary-red);">{{ c.camp_code }}</strong></td>
+          <td><strong>{{ c.camp_name }}</strong></td>
+          <td>{{ c.camp_date }}</td>
+          <td>{{ c.location }}</td>
+          <td>{{ c.organizer or '-' }}</td>
+          <td>{{ c.expected_donors }}</td>
+          <td>{{ c.actual_donors }}</td>
+          <td style="text-align: right;">
+            <div class="btn-action-group" style="justify-content: flex-end;">
+              <a href="{{ url_for('camp_edit', camp_id=c.id) }}"
+                 class="btn btn-sm btn-secondary">Edit</a>
+
+              <form method="POST"
+                    action="{{ url_for('camp_delete', camp_id=c.id) }}"
+                    style="display: inline;"
+                    onsubmit="return confirm('Delete camp {{ c.camp_code }}?');">
+                <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+              </form>
+            </div>
+          </td>
+        </tr>
+
+        {% else %}
+        <tr>
+          <td colspan="8">
+            <div class="empty-state">
+              <div class="empty-state-title">No donation camps found</div>
+              <p>Register your first blood donation camp to get started.</p>
+              <a href="{{ url_for('camp_add') }}" class="btn btn-primary"
+                 style="margin-top: 12px;">+ Register Camp</a>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% endblock %}

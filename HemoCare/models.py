@@ -196,8 +196,8 @@ def create_donation(data):
     cursor.execute("""
         INSERT INTO donations (
             donation_code, donor_id, donor_code, donor_name, blood_group,
-            donation_date, donation_type, volume_ml, bag_number, status, remarks, created_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            donation_date, donation_type, volume_ml, bag_number, status, remarks, created_at, hemoglobin
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """, (
         donation_code,
         donor["id"],
@@ -210,7 +210,8 @@ def create_donation(data):
         bag_num,
         data.get("status", "Collected"),
         data.get("remarks", "").strip() or None,
-        now_str
+        now_str,
+        float(data["hemoglobin"]) if data.get("hemoglobin") else None
     ))
     donation_id = cursor.lastrowid
 
@@ -559,8 +560,8 @@ def issue_unit(data):
     if not hospital:
         raise ValueError("Specified Hospital does not exist.")
 
-    if not data.get("patient_name"):
-        raise ValueError("Patient Name is required for issuing blood.")
+    if not (data.get("reason") or "").strip():
+        raise ValueError("Indication / Clinical Transfusion Reason is required.")
 
     if not data.get("issued_by"):
         raise ValueError("Issued By (staff name) is required.")
@@ -596,7 +597,7 @@ def issue_unit(data):
         unit["blood_group"],
         unit["component_type"],
         1,
-        data["patient_name"].strip(),
+        (data.get("patient_name") or "").strip(),
         data.get("patient_id", "").strip() or None,
         data.get("doctor_dept", "").strip() or None,
         data.get("reason", "").strip() or None,
@@ -1019,3 +1020,333 @@ def get_chart_data():
         "monthly_donations": monthly_donations,
         "monthly_issues": monthly_issues
     }
+
+
+# ==========================================
+# CAMP MANAGEMENT & KIT/REAGENT STOCK
+# ==========================================
+
+def get_camps(search=None):
+    conn = get_db_connection()
+    try:
+        query = "SELECT * FROM camps WHERE 1=1"
+        params = []
+
+        if search:
+            s = f"%{search.strip()}%"
+            query += """
+                AND (camp_code LIKE ? OR camp_name LIKE ?
+                     OR location LIKE ? OR organizer LIKE ?)
+            """
+            params.extend([s, s, s, s])
+
+        query += " ORDER BY camp_date DESC, id DESC"
+        return conn.execute(query, params).fetchall()
+    finally:
+        conn.close()
+
+
+def get_camp_by_id(camp_id):
+    conn = get_db_connection()
+    try:
+        return conn.execute(
+            "SELECT * FROM camps WHERE id = ? OR camp_code = ?",
+            (camp_id, camp_id)
+        ).fetchone()
+    finally:
+        conn.close()
+
+
+def create_camp(data):
+    camp_name = (data.get("camp_name") or "").strip()
+    camp_date = (data.get("camp_date") or "").strip()
+    location = (data.get("location") or "").strip()
+
+    if not camp_name or not camp_date or not location:
+        raise ValueError("Camp Name, Camp Date and Location are required.")
+
+    try:
+        datetime.strptime(camp_date, "%Y-%m-%d")
+    except ValueError:
+        raise ValueError("Please enter a valid Camp Date.")
+
+    def count_value(field):
+        value = data.get(field, 0)
+        try:
+            number = int(value or 0)
+        except (TypeError, ValueError):
+            raise ValueError(f"{field.replace('_', ' ').title()} must be a whole number.")
+        if number < 0:
+            raise ValueError(f"{field.replace('_', ' ').title()} cannot be negative.")
+        return number
+
+    expected = count_value("expected_donors")
+    actual = count_value("actual_donors")
+
+    camp_code = get_next_code("camps", "camp_code", "CAMP")
+    now_str = datetime.now().isoformat()
+
+    conn = get_db_connection()
+    try:
+        cursor = conn.execute("""
+            INSERT INTO camps (
+                camp_code, camp_name, camp_date, location, organizer,
+                contact_person, contact_number, expected_donors,
+                actual_donors, remarks, created_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, (
+            camp_code, camp_name, camp_date, location,
+            (data.get("organizer") or "").strip() or None,
+            (data.get("contact_person") or "").strip() or None,
+            (data.get("contact_number") or "").strip() or None,
+            expected, actual,
+            (data.get("remarks") or "").strip() or None,
+            now_str
+        ))
+        conn.commit()
+        return cursor.lastrowid, camp_code
+    finally:
+        conn.close()
+
+
+def update_camp(camp_id, data):
+    camp_name = (data.get("camp_name") or "").strip()
+    camp_date = (data.get("camp_date") or "").strip()
+    location = (data.get("location") or "").strip()
+
+    if not camp_name or not camp_date or not location:
+        raise ValueError("Camp Name, Camp Date and Location are required.")
+
+    try:
+        datetime.strptime(camp_date, "%Y-%m-%d")
+    except ValueError:
+        raise ValueError("Please enter a valid Camp Date.")
+
+    def count_value(field):
+        try:
+            number = int(data.get(field, 0) or 0)
+        except (TypeError, ValueError):
+            raise ValueError(f"{field.replace('_', ' ').title()} must be a whole number.")
+        if number < 0:
+            raise ValueError(f"{field.replace('_', ' ').title()} cannot be negative.")
+        return number
+
+    conn = get_db_connection()
+    try:
+        cursor = conn.execute("""
+            UPDATE camps SET
+                camp_name = ?, camp_date = ?, location = ?, organizer = ?,
+                contact_person = ?, contact_number = ?, expected_donors = ?,
+                actual_donors = ?, remarks = ?
+            WHERE id = ?
+        """, (
+            camp_name, camp_date, location,
+            (data.get("organizer") or "").strip() or None,
+            (data.get("contact_person") or "").strip() or None,
+            (data.get("contact_number") or "").strip() or None,
+            count_value("expected_donors"),
+            count_value("actual_donors"),
+            (data.get("remarks") or "").strip() or None,
+            camp_id
+        ))
+        if cursor.rowcount == 0:
+            raise ValueError("Camp record not found.")
+        conn.commit()
+    finally:
+        conn.close()
+
+
+def delete_camp(camp_id):
+    conn = get_db_connection()
+    try:
+        cursor = conn.execute("DELETE FROM camps WHERE id = ?", (camp_id,))
+        if cursor.rowcount == 0:
+            raise ValueError("Camp record not found.")
+        conn.commit()
+    finally:
+        conn.close()
+
+
+
+
+# ==========================================
+# KIT & REAGENT STOCK OPERATIONS
+# ==========================================
+
+def _validate_kit_reagent(data):
+    import math
+
+    item_name = (data.get("item_name") or "").strip()
+    category = (data.get("category") or "").strip()
+    unit = (data.get("unit") or "").strip()
+    received_date = (data.get("received_date") or "").strip()
+    expiry_date = (data.get("expiry_date") or "").strip() or None
+
+    if not item_name or not category or not unit or not received_date:
+        raise ValueError("Item Name, Category, Unit and Received Date are required.")
+
+    try:
+        datetime.strptime(received_date, "%Y-%m-%d")
+        if expiry_date:
+            datetime.strptime(expiry_date, "%Y-%m-%d")
+            if expiry_date < received_date:
+                raise ValueError("Expiry Date cannot be earlier than Received Date.")
+    except ValueError as exc:
+        if "earlier than" in str(exc):
+            raise
+        raise ValueError("Please enter valid Received and Expiry Dates.")
+
+    def quantity(field, default=0):
+        try:
+            value = float(data.get(field, default) or default)
+        except (TypeError, ValueError):
+            raise ValueError(f"{field.replace('_', ' ').title()} must be numeric.")
+        if not math.isfinite(value) or value < 0:
+            raise ValueError(f"{field.replace('_', ' ').title()} cannot be negative.")
+        return value
+
+    received = quantity("quantity_received")
+    available = quantity("quantity_available")
+    minimum = quantity("minimum_stock_level")
+
+    if available > received:
+        raise ValueError("Available Quantity cannot exceed Quantity Received.")
+
+    return {
+        "item_name": item_name,
+        "category": category,
+        "manufacturer": (data.get("manufacturer") or "").strip() or None,
+        "batch_number": (data.get("batch_number") or "").strip() or None,
+        "quantity_received": received,
+        "quantity_available": available,
+        "unit": unit,
+        "received_date": received_date,
+        "expiry_date": expiry_date,
+        "supplier": (data.get("supplier") or "").strip() or None,
+        "minimum_stock_level": minimum,
+        "remarks": (data.get("remarks") or "").strip() or None
+    }
+
+
+def get_kit_reagents(search=None, category=None, stock_status=None, expiry_status=None):
+    conn = get_db_connection()
+    try:
+        query = "SELECT * FROM kit_reagents WHERE 1=1"
+        params = []
+
+        if search:
+            term = f"%{search.strip()}%"
+            query += """
+                AND (item_code LIKE ? OR item_name LIKE ?
+                     OR category LIKE ? OR batch_number LIKE ?
+                     OR supplier LIKE ? OR manufacturer LIKE ?)
+            """
+            params.extend([term] * 6)
+
+        if category:
+            query += " AND category = ?"
+            params.append(category)
+
+        if stock_status == "low":
+            query += " AND quantity_available <= minimum_stock_level"
+        elif stock_status == "available":
+            query += " AND quantity_available > minimum_stock_level"
+
+        if expiry_status == "expired":
+            query += " AND expiry_date IS NOT NULL AND expiry_date < date('now')"
+        elif expiry_status == "soon":
+            query += """ AND expiry_date IS NOT NULL
+                         AND expiry_date >= date('now')
+                         AND expiry_date <= date('now', '+30 days')"""
+        elif expiry_status == "valid":
+            query += """ AND (expiry_date IS NULL
+                         OR expiry_date > date('now', '+30 days'))"""
+
+        query += " ORDER BY id DESC"
+        return conn.execute(query, params).fetchall()
+    finally:
+        conn.close()
+
+
+def get_kit_reagent_by_id(item_id):
+    conn = get_db_connection()
+    try:
+        return conn.execute(
+            "SELECT * FROM kit_reagents WHERE id = ? OR item_code = ?",
+            (item_id, item_id)
+        ).fetchone()
+    finally:
+        conn.close()
+
+
+def create_kit_reagent(data):
+    values = _validate_kit_reagent(data)
+    item_code = get_next_code("kit_reagents", "item_code", "KIT")
+    now_str = datetime.now().isoformat()
+
+    conn = get_db_connection()
+    try:
+        cursor = conn.execute("""
+            INSERT INTO kit_reagents (
+                item_code, item_name, category, manufacturer, batch_number,
+                quantity_received, quantity_available, unit, received_date,
+                expiry_date, supplier, minimum_stock_level, remarks, created_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """, (
+            item_code, values["item_name"], values["category"],
+            values["manufacturer"], values["batch_number"],
+            values["quantity_received"], values["quantity_available"],
+            values["unit"], values["received_date"], values["expiry_date"],
+            values["supplier"], values["minimum_stock_level"],
+            values["remarks"], now_str
+        ))
+        conn.commit()
+        return cursor.lastrowid, item_code
+    finally:
+        conn.close()
+
+
+def update_kit_reagent(item_id, data):
+    values = _validate_kit_reagent(data)
+
+    conn = get_db_connection()
+    try:
+        cursor = conn.execute("""
+            UPDATE kit_reagents SET
+                item_name = ?, category = ?, manufacturer = ?,
+                batch_number = ?, quantity_received = ?,
+                quantity_available = ?, unit = ?, received_date = ?,
+                expiry_date = ?, supplier = ?, minimum_stock_level = ?,
+                remarks = ?
+            WHERE id = ?
+        """, (
+            values["item_name"], values["category"],
+            values["manufacturer"], values["batch_number"],
+            values["quantity_received"], values["quantity_available"],
+            values["unit"], values["received_date"],
+            values["expiry_date"], values["supplier"],
+            values["minimum_stock_level"], values["remarks"], item_id
+        ))
+        if cursor.rowcount == 0:
+            raise ValueError("Kit / Reagent record not found.")
+        conn.commit()
+    finally:
+        conn.close()
+
+
+def delete_kit_reagent(item_id):
+    conn = get_db_connection()
+    try:
+        cursor = conn.execute(
+            "DELETE FROM kit_reagents WHERE id = ?", (item_id,)
+        )
+        if cursor.rowcount == 0:
+            raise ValueError("Kit / Reagent record not found.")
+        conn.commit()
+    finally:
+        conn.close()
+
+
+# ==========================================
+# STOCK & DASHBOARD CALCULATIONS
+# ==========================================
