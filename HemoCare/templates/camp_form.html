@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block title %}{{ action }} Camp{% endblock %}
+{% block page_title %}{{ action }} Blood Donation Camp{% endblock %}
+
+{% block content %}
+
+<div class="card-box">
+  <div class="card-header">
+    <div class="card-title">{{ action }} Camp Registration</div>
+  </div>
+
+  <form method="POST" action="{% if action == 'Edit' %}{{ url_for('camp_edit', camp_id=camp_id) }}{% else %}{{ url_for('camp_add') }}{% endif %}">
+
+    <div class="form-grid">
+
+      <div class="form-group">
+        <label>Camp Name <span class="required">*</span></label>
+        <input type="text" name="camp_name" class="form-control"
+               value="{{ camp.get('camp_name', '') }}" required maxlength="150">
+      </div>
+
+      <div class="form-group">
+        <label>Camp Date <span class="required">*</span></label>
+        <input type="date" name="camp_date" class="form-control"
+               value="{{ camp.get('camp_date', '') }}" required>
+      </div>
+
+      <div class="form-group">
+        <label>Location / Venue <span class="required">*</span></label>
+        <input type="text" name="location" class="form-control"
+               value="{{ camp.get('location', '') }}" required maxlength="200">
+      </div>
+
+      <div class="form-group">
+        <label>Organizer</label>
+        <input type="text" name="organizer" class="form-control"
+               value="{{ camp.get('organizer', '') }}">
+      </div>
+
+      <div class="form-group">
+        <label>Contact Person</label>
+        <input type="text" name="contact_person" class="form-control"
+               value="{{ camp.get('contact_person', '') }}">
+      </div>
+
+      <div class="form-group">
+        <label>Contact Number</label>
+        <input type="tel" name="contact_number" class="form-control"
+               value="{{ camp.get('contact_number', '') }}">
+      </div>
+
+      <div class="form-group">
+        <label>Expected Donors</label>
+        <input type="number" name="expected_donors" class="form-control"
+               value="{{ camp.get('expected_donors', 0) }}"
+               min="0" step="1">
+      </div>
+
+      <div class="form-group">
+        <label>Actual Donors</label>
+        <input type="number" name="actual_donors" class="form-control"
+               value="{{ camp.get('actual_donors', 0) }}"
+               min="0" step="1">
+      </div>
+
+      <div class="form-group" style="grid-column: 1 / -1;">
+        <label>Remarks</label>
+        <textarea name="remarks" class="form-control" rows="3">{{ camp.get('remarks', '') }}</textarea>
+      </div>
+
+    </div>
+
+    <div class="btn-action-group" style="margin-top: 20px;">
+      <button type="submit" class="btn btn-primary">
+        {{ 'Update Camp' if action == 'Edit' else 'Register Camp' }}
+      </button>
+      <a href="{{ url_for('camps') }}" class="btn btn-secondary">Cancel</a>
+    </div>
+
+  </form>
+</div>
+
+{% endblock %}

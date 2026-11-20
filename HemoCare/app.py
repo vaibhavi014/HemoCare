@@ -695,6 +695,177 @@ def instructions():
     return render_template("instructions.html")
 
 # ==========================================
+# KIT & REAGENT STOCK
+# ==========================================
+
+@app.route("/kit-reagents")
+@login_required
+def kit_reagents():
+    search = request.args.get("search", "")
+    category = request.args.get("category", "")
+    stock_status = request.args.get("stock_status", "")
+    expiry_status = request.args.get("expiry_status", "")
+
+    items = models.get_kit_reagents(
+        search=search,
+        category=category,
+        stock_status=stock_status,
+        expiry_status=expiry_status
+    )
+
+    return render_template(
+        "kit_reagents.html",
+        items=items,
+        search=search,
+        category=category,
+        stock_status=stock_status,
+        expiry_status=expiry_status,
+        today=date.today().isoformat(),
+        expiry_soon_cutoff=(date.today() + timedelta(days=30)).isoformat()
+    )
+
+
+@app.route("/kit-reagents/add", methods=["GET", "POST"])
+@login_required
+def kit_reagent_add():
+    if request.method == "POST":
+        try:
+            item_id, item_code = models.create_kit_reagent(request.form)
+            flash(f"Item {item_code} registered successfully!", "success")
+            return redirect(url_for("kit_reagents"))
+        except Exception as e:
+            flash(f"Unable to save item: {str(e)}", "danger")
+            return render_template(
+                "kit_reagent_form.html", item=request.form, action="Add"
+            )
+
+    return render_template("kit_reagent_form.html", item={}, action="Add")
+
+
+@app.route("/kit-reagents/edit/<int:item_id>", methods=["GET", "POST"])
+@login_required
+def kit_reagent_edit(item_id):
+    item = models.get_kit_reagent_by_id(item_id)
+
+    if not item:
+        flash("Kit / Reagent record not found.", "danger")
+        return redirect(url_for("kit_reagents"))
+
+    item = dict(item)
+
+    if request.method == "POST":
+        try:
+            models.update_kit_reagent(item_id, request.form)
+            flash(f"Item {item['item_code']} updated successfully!", "success")
+            return redirect(url_for("kit_reagents"))
+        except Exception as e:
+            flash(f"Unable to update item: {str(e)}", "danger")
+            return render_template(
+                "kit_reagent_form.html",
+                item=request.form, action="Edit", item_id=item_id
+            )
+
+    return render_template(
+        "kit_reagent_form.html", item=item, action="Edit", item_id=item_id
+    )
+
+
+@app.route("/kit-reagents/delete/<int:item_id>", methods=["POST"])
+@login_required
+def kit_reagent_delete(item_id):
+    try:
+        models.delete_kit_reagent(item_id)
+        flash("Kit / Reagent record deleted successfully.", "success")
+    except Exception as e:
+        flash(f"Unable to delete item: {str(e)}", "danger")
+
+    return redirect(url_for("kit_reagents"))
+
+# CAMP RECORDS
+# ==========================================
+
+@app.route("/camps")
+@login_required
+def camps():
+    search = request.args.get("search", "")
+    camp_list = models.get_camps(search=search)
+    return render_template("camps.html", camps=camp_list, search=search)
+
+
+@app.route("/camps/add", methods=["GET", "POST"])
+@login_required
+def camp_add():
+    if request.method == "POST":
+        try:
+            camp_id, camp_code = models.create_camp(request.form)
+            flash(f"Camp {camp_code} registered successfully!", "success")
+            return redirect(url_for("camps"))
+        except Exception as e:
+            flash(f"Unable to save camp record: {str(e)}", "danger")
+            return render_template("camp_form.html", camp=request.form, action="Add")
+
+    return render_template("camp_form.html", camp={}, action="Add")
+
+
+@app.route("/camps/edit/<int:camp_id>", methods=["GET", "POST"])
+@login_required
+def camp_edit(camp_id):
+    camp = models.get_camp_by_id(camp_id)
+
+    if not camp:
+        flash("Camp record not found.", "danger")
+        return redirect(url_for("camps"))
+
+    # Convert SQLite Row to dictionary for template compatibility
+    camp = dict(camp)
+
+    if request.method == "POST":
+        try:
+            models.update_camp(camp_id, request.form)
+            flash(f"Camp {camp['camp_code']} updated successfully!", "success")
+            return redirect(url_for("camps"))
+        except Exception as e:
+            flash(f"Unable to save camp record: {str(e)}", "danger")
+            return render_template(
+                "camp_form.html", camp=request.form,
+                action="Edit", camp_id=camp_id
+            )
+
+    return render_template(
+        "camp_form.html", camp=camp, action="Edit", camp_id=camp_id
+    )
+
+
+@app.route("/camps/delete/<int:camp_id>", methods=["POST"])
+@login_required
+def camp_delete(camp_id):
+    try:
+        models.delete_camp(camp_id)
+        flash("Camp record deleted successfully.", "success")
+    except Exception as e:
+        flash(f"Unable to delete camp: {str(e)}", "danger")
+
+    return redirect(url_for("camps"))
+
+
+# ==========================================
+# REPORTS & EXPORTS
+# ==========================================
+
+
+
+
+
+
+
+# ==========================================
+# USER INSTRUCTIONS & MANUAL
+# ==========================================
+
+
+
+# ==========================================
+
 # ERROR HANDLERS
 # ==========================================
 

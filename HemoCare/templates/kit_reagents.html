@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2>Kit & Reagent Stock</h2>
+            <p class="text-muted mb-0">Manage diagnostic kits, reagents and consumables.</p>
+        </div>
+        <a href="{{ url_for('kit_reagent_add') }}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Add Item
+        </a>
+    </div>
+
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="GET" action="{{ url_for('kit_reagents') }}">
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <label class="form-label">Search</label>
+                        <input type="text" name="search" class="form-control"
+                               value="{{ search }}"
+                               placeholder="Item, code, batch, supplier...">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Category</label>
+                        <input type="text" name="category" class="form-control"
+                               value="{{ category }}" placeholder="Enter category">
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">Stock Status</label>
+                        <select name="stock_status" class="form-select">
+                            <option value="">All</option>
+                            <option value="low" {% if stock_status == 'low' %}selected{% endif %}>Low Stock</option>
+                            <option value="available" {% if stock_status == 'available' %}selected{% endif %}>Sufficient Stock</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">Expiry Status</label>
+                        <select name="expiry_status" class="form-select">
+                            <option value="">All</option>
+                            <option value="expired" {% if expiry_status == 'expired' %}selected{% endif %}>Expired</option>
+                            <option value="soon" {% if expiry_status == 'soon' %}selected{% endif %}>Expiring Soon</option>
+                            <option value="valid" {% if expiry_status == 'valid' %}selected{% endif %}>Valid</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2 d-flex align-items-end gap-2">
+                        <button type="submit" class="btn btn-primary">Filter</button>
+                        <a href="{{ url_for('kit_reagents') }}" class="btn btn-outline-secondary">Reset</a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle">
+                    <thead>
+                        <tr>
+                            <th>Item Code</th>
+                            <th>Item Name</th>
+                            <th>Category</th>
+                            <th>Batch Number</th>
+                            <th>Available</th>
+                            <th>Minimum Level</th>
+                            <th>Received Date</th>
+                            <th>Expiry Date</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in items %}
+                        <tr>
+                            <td>{{ item.item_code }}</td>
+                            <td>
+                                <strong>{{ item.item_name }}</strong>
+                                {% if item.manufacturer %}
+                                    <br><small class="text-muted">{{ item.manufacturer }}</small>
+                                {% endif %}
+                            </td>
+                            <td>{{ item.category }}</td>
+                            <td>{{ item.batch_number or '-' }}</td>
+                            <td>{{ item.quantity_available }} {{ item.unit }}</td>
+                            <td>{{ item.minimum_stock_level }} {{ item.unit }}</td>
+                            <td>{{ item.received_date }}</td>
+                            <td>{{ item.expiry_date or 'Not specified' }}</td>
+                            <td>
+                                {% if item.quantity_available <= item.minimum_stock_level %}
+                                    <span class="badge bg-warning text-dark">Low Stock</span>
+                                {% else %}
+                                    <span class="badge bg-success">Sufficient</span>
+                                {% endif %}
+
+                                {% if item.expiry_date %}
+                                    {% if item.expiry_date < today %}
+                                        <br><span class="badge bg-danger mt-1">Expired</span>
+                                    {% elif item.expiry_date <= expiry_soon_cutoff %}
+                                        <br><span class="badge bg-warning text-dark mt-1">Expiring Soon</span>
+                                    {% endif %}
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="{{ url_for('kit_reagent_edit', item_id=item.id) }}"
+                                   class="btn btn-sm btn-outline-primary">Edit</a>
+                                <form method="POST"
+                                      action="{{ url_for('kit_reagent_delete', item_id=item.id) }}"
+                                      class="d-inline"
+                                      onsubmit="return confirm('Delete this item?');">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="10" class="text-center text-muted py-4">
+                                No kit or reagent records found.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <small class="text-muted">Showing {{ items|length }} record(s).</small>
+        </div>
+    </div>
+</div>
+{% endblock %}
